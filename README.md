@@ -1,3 +1,3 @@
 # Placemap
 
-A tablecloth ripe with food culture knowledge.
+Eating your way through a world of traditions.
