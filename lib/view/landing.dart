@@ -1,20 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:placemap/view/common/common.dart';
+import 'package:placemap/view/create.dart';
 
 class LandingScreen extends StatefulWidget {
   _LandingScreenState createState() => _LandingScreenState();
 }
 
 class _LandingScreenState extends State<LandingScreen> {
-  bool showTitle;
-  Widget child;
+  bool _showTitle;
+  Widget _child;
 
   @override
   void initState() {
     super.initState();
-    showTitle = true;
-    child = _landingButttons();
+    _showTitle = true;
+    _child = _landingButttons();
   }
 
   @override
@@ -39,8 +40,8 @@ class _LandingScreenState extends State<LandingScreen> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                if (showTitle) _title(),
-                child,
+                if (_showTitle) _title(),
+                _child,
                 SizedBox(
                   height: 300,
                 )
@@ -69,13 +70,57 @@ class _LandingScreenState extends State<LandingScreen> {
         ),
       );
 
+  void _back() {
+    setState(() {
+      _child = _landingButttons();
+    });
+  }
+
+  void _onStart() {
+    setState(() {
+      _showTitle = false;
+      _child = CreateScreen();
+    });
+  }
+
+  void _onAbout() {
+    setState(() {
+      _child = AboutScreen(_back);
+    });
+  }
+
   Widget _landingButttons() => Column(
         children: [
-          PlacemapButton(onPressed: () => {}, text: 'Start'),
-          SizedBox(
-            height: 30,
-          ),
-          PlacemapButton(onPressed: () => {}, text: 'About'),
+          PlacemapButton(onPressed: _onStart, text: 'Start'),
+          SizedBox(height: 30),
+          PlacemapButton(onPressed: _onAbout, text: 'About'),
         ],
       );
+}
+
+class AboutScreen extends StatelessWidget {
+  static const desc = "PlaceMap is an app designed to support playful and social interaction at mealtime. It was designed by a team of researchers at UC Santa Cruz. If you'd like to know more about the project, please reach out to faltarri@ucsc.edu";
+
+  final VoidCallback back;
+
+  AboutScreen(this.back);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Column(
+      children: [
+        Container(
+          padding: EdgeInsets.all(8),
+          child: Text(
+            desc,
+            style: theme.textTheme.bodyText1,
+            textAlign: TextAlign.center,
+          ),
+        ),
+        PlacemapButton(onPressed: back, text: 'Back'),
+      ],
+    );
+  }
 }
