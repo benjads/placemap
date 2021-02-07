@@ -1,8 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:placemap/repo/session_repo.dart';
 import 'package:placemap/view/landing.dart';
-import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -10,7 +8,6 @@ void main() {
 }
 
 class PlacemapApp extends StatelessWidget {
-
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
 
   @override
@@ -19,8 +16,9 @@ class PlacemapApp extends StatelessWidget {
       future: _initialization,
       builder: (context, snapshot) {
         if (snapshot.hasError) {
-          return Container();
-          // TODO
+          return Center(
+            child: Text('Error...'),
+          );
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
@@ -45,17 +43,80 @@ class PlacemapApp extends StatelessWidget {
               ),
               fontFamily: 'Vinson',
             ),
-            home: FutureProvider(
-              create: (_) async => SessionRepo().createSession(),
-              lazy: true,
-              child: LandingScreen(),
-            ),
+            home: LandingScreen(),
           );
         }
 
-        return Container();
-        // TODO
+        return Center(
+          child: CircularProgressIndicator(),
+        );
       },
     );
   }
 }
+
+// class MainFlow extends StatefulWidget {
+//   _MainFlowState createState() => _MainFlowState();
+// }
+//
+// class _MainFlowState extends State<MainFlow> {
+//   Session _session;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     SessionRepo().createSession().then((session) => _setSession(session));
+//   }
+//
+//   void _setSession(Session session) {
+//     setState(() {
+//       _session = session;
+//     });
+//   }
+//
+//   Widget _loading() {
+//     return SafeArea(
+//       child: Center(
+//         child: CircularProgressIndicator(),
+//       ),
+//     );
+//   }
+//
+//   Widget _stateWidget() {
+//     switch (_session.state) {
+//       case SessionState.waiting:
+//         return LandingScreen();
+//       case SessionState.inGame:
+//         // TODO: Handle this case.
+//         break;
+//     }
+//
+//     return null;
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     if (_session == null) {
+//       return _loading();
+//     }
+//
+//     return StreamBuilder<DocumentSnapshot>(
+//       stream: _session.docRef.snapshots(),
+//       builder:
+//           (BuildContext context, AsyncSnapshot<DocumentSnapshot> snapshot) {
+//         if (snapshot.hasError) {
+//           return Text('Error....');
+//         }
+//
+//         if (snapshot.connectionState == ConnectionState.waiting) {
+//           return _loading();
+//         }
+//
+//         return Provider<Session>(
+//           create: (_) => Session.fromSnapshot(snapshot.data),
+//           child: _stateWidget(),
+//         );
+//       },
+//     );
+//   }
+// }
