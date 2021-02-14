@@ -5,7 +5,10 @@ class IntroScreen extends StatelessWidget {
   final Widget footer;
   final Widget content;
 
-  IntroScreen({this.showTitle = true, this.footer, @required this.content});
+  const IntroScreen(
+      {Key key, this.showTitle = true, this.footer, @required this.content})
+      : super(key: key);
+
   Widget _title() => Container(
         padding: EdgeInsets.fromLTRB(0, 40, 0, 100),
         child: SizedBox(
@@ -29,8 +32,8 @@ class IntroScreen extends StatelessWidget {
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
           colors: [
-            theme.primaryColor,
-            Color.fromRGBO(5, 56, 79, 1),
+            theme.colorScheme.primary,
+            theme.colorScheme.primaryVariant
           ],
         )),
         child: Stack(
@@ -38,10 +41,7 @@ class IntroScreen extends StatelessWidget {
           children: [
             Positioned.fill(
               child: Column(
-                children: [
-                  if (showTitle) _title(),
-                  content
-                ],
+                children: [if (showTitle) _title(), content],
               ),
             ),
             footer == null

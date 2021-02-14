@@ -2,6 +2,12 @@ import 'package:flutter/material.dart';
 
 final appTheme = ThemeData(
   primaryColor: Color.fromRGBO(0, 113, 188, 1),
+  colorScheme: ColorScheme.light(
+    primary: Color.fromRGBO(0, 113, 188, 1),
+    primaryVariant: Color.fromRGBO(5, 56, 79, 1.0),
+    onPrimary: Color.fromRGBO(163, 237, 244, 1),
+
+  ),
   textTheme: TextTheme(
     headline1: TextStyle(),
     headline2: TextStyle(),

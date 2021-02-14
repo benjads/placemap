@@ -1,7 +1,12 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:placemap/models/app_data.dart';
+import 'package:placemap/models/session.dart';
+import 'package:placemap/screens/about.dart';
+import 'package:placemap/screens/join.dart';
+import 'package:placemap/screens/landing.dart';
 import 'package:placemap/theme.dart';
-import 'package:placemap/view/landing.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,10 +28,32 @@ class PlacemapApp extends StatelessWidget {
         }
 
         if (snapshot.connectionState == ConnectionState.done) {
-          return MaterialApp(
-            title: 'Placemap',
-            theme: appTheme,
-            home: LandingScreen(),
+          return MultiProvider(
+            providers: [
+              ChangeNotifierProvider<AppData>(create: (_) => AppData()),
+            ],
+            child: MaterialApp(
+              title: 'Placemap',
+              theme: appTheme,
+              initialRoute: '/',
+              onGenerateRoute: (RouteSettings settings) {
+                return PageRouteBuilder(
+                  pageBuilder: (_, __, ___) {
+                    switch (settings.name) {
+                      case '/':
+                        return LandingScreen();
+                      case '/about':
+                        return AboutScreen();
+                      case '/join':
+                        return JoinScreen();
+                    }
+
+                    return null;
+                  },
+                  transitionDuration: Duration(seconds: 0),
+                );
+              },
+            ),
           );
         }
 
