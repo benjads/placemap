@@ -6,7 +6,6 @@ class IntroScreen extends StatelessWidget {
   final Widget content;
 
   IntroScreen({this.showTitle = true, this.footer, @required this.content});
-
   Widget _title() => Container(
         padding: EdgeInsets.fromLTRB(0, 40, 0, 100),
         child: SizedBox(

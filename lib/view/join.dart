@@ -6,6 +6,7 @@ import 'package:placemap/model/session.dart';
 import 'package:placemap/repo/session_repo.dart';
 import 'package:placemap/view/common/common.dart';
 import 'package:placemap/view/common/intro.dart';
+import 'package:placemap/view/tutorial.dart';
 
 class JoinScreen extends StatelessWidget {
   @override
@@ -20,6 +21,7 @@ class JoinScreen extends StatelessWidget {
         child: Column(
           children: [
             CreateSection(),
+            SizedBox(height: 15),
             Padding(
               padding: EdgeInsets.symmetric(
                 vertical: 10,
@@ -68,17 +70,21 @@ class CreateSection extends StatefulWidget {
 class _CreateSectionState extends State<CreateSection> {
   Session _session;
   StreamSubscription<DocumentSnapshot> _sub;
+  bool _retain;
 
   @override
   void initState() {
     super.initState();
+    _retain = false;
 
     SessionRepo().createSession().then((session) => {
           setState(() {
             _session = session;
 
             _sub = _session.docRef.snapshots().listen((snapshot) {
-              _session = Session.fromSnapshot(snapshot);
+              setState(() {
+                _session = Session.fromSnapshot(snapshot);
+              });
             });
           })
         });
@@ -88,6 +94,23 @@ class _CreateSectionState extends State<CreateSection> {
   void dispose() {
     super.dispose();
     _sub.cancel();
+
+    if (!_retain) {
+      SessionRepo().destroySession(_session);
+      // TODO: Host closes app
+    }
+  }
+
+  void _start() {
+    _retain = true;
+    _session.state = SessionState.tutorial;
+    SessionRepo().updateSession(_session);
+    Navigator.pushReplacement(
+        context,
+        PageRouteBuilder(
+            pageBuilder: (context, animation1, animation2) =>
+                Tutorial1(_session.docRef),
+            transitionDuration: Duration(seconds: 0)));
   }
 
   @override
@@ -112,13 +135,13 @@ class _CreateSectionState extends State<CreateSection> {
         ),
         SizedBox(height: 20),
         participantBubbles(theme, _session),
-        SizedBox(height: 10),
+        SizedBox(height: 20),
         Text(
           'AND PRESS',
           style: theme.textTheme.headline4,
         ),
         SizedBox(height: 10),
-        PlacemapButton(onPressed: () {}, text: "WE'RE READY!"),
+        PlacemapButton(onPressed: _start, text: "WE'RE READY!"),
       ],
     );
   }
@@ -143,7 +166,10 @@ class _ExistingSectionState extends State<ExistingSection> {
     }
 
     final Session session = await SessionRepo().getSession(id);
-    await SessionRepo().addSelf(session);
+    if (await SessionRepo().self(session) == null) {
+      await SessionRepo().addSelf(session);
+    }
+
     Navigator.push(
         context,
         PageRouteBuilder(
@@ -214,7 +240,19 @@ class _WaitScreenState extends State<WaitScreen> {
   void initState() {
     super.initState();
     _sub = session.docRef.snapshots().listen((snapshot) {
-      session = Session.fromSnapshot(snapshot);
+      setState(() {
+        session = Session.fromSnapshot(snapshot);
+
+        if (session.state != SessionState.waiting) {
+          Navigator.pop(context);
+          Navigator.pushReplacement(
+              context,
+              PageRouteBuilder(
+                  pageBuilder: (context, animation1, animation2) =>
+                      Tutorial1(session.docRef),
+                  transitionDuration: Duration(seconds: 0)));
+        }
+      });
     });
   }
 
@@ -222,6 +260,7 @@ class _WaitScreenState extends State<WaitScreen> {
   void dispose() {
     super.dispose();
     _sub.cancel();
+    SessionRepo().removeSelf(session);
   }
 
   @override
@@ -242,10 +281,12 @@ class _WaitScreenState extends State<WaitScreen> {
             ),
             SizedBox(height: 20),
             participantBubbles(theme, session),
-            SizedBox(height: 10),
-            PlacemapButton(onPressed: () {
-              Navigator.pop(context);
-            }, text: "GO BACK"),
+            SizedBox(height: 20),
+            PlacemapButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+                text: "GO BACK"),
           ],
         ),
       ),
@@ -255,24 +296,27 @@ class _WaitScreenState extends State<WaitScreen> {
 
 Widget participantBubbles(ThemeData theme, Session session) {
   return Container(
-    padding: EdgeInsets.symmetric(horizontal: 60),
+    padding: EdgeInsets.symmetric(horizontal: 30),
     child: Row(
       mainAxisAlignment: MainAxisAlignment.start,
       children: session.participants
           .asMap()
           .keys
           .map(
-            (idx) => Material(
-              shape: CircleBorder(),
-              color: Color.fromRGBO(163, 237, 244, 1),
-              child: Container(
-                height: 60.0,
-                width: 60.0,
-                child: Center(
-                  child: Text(
-                    idx == 0 ? 'You' : 'P$idx',
-                    style: theme.textTheme.headline5
-                        .copyWith(color: Color.fromRGBO(27, 20, 100, 1)),
+            (idx) => Padding(
+              padding: EdgeInsets.only(right: 10),
+              child: Material(
+                shape: CircleBorder(),
+                color: Color.fromRGBO(163, 237, 244, 1),
+                child: Container(
+                  height: 60.0,
+                  width: 60.0,
+                  child: Center(
+                    child: Text(
+                      idx == 0 ? 'You' : 'P${idx + 1}',
+                      style: theme.textTheme.headline5
+                          .copyWith(color: Color.fromRGBO(27, 20, 100, 1)),
+                    ),
                   ),
                 ),
               ),

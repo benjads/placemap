@@ -7,11 +7,10 @@ import 'package:placemap/model/participant.dart';
 import 'package:placemap/model/session.dart';
 
 class SessionRepo {
-
   CollectionReference _sessions;
 
   SessionRepo._()
-  :_sessions = FirebaseFirestore.instance.collection('sessions');
+      : _sessions = FirebaseFirestore.instance.collection('sessions');
 
   static SessionRepo _instance;
 
@@ -35,19 +34,41 @@ class SessionRepo {
     return session;
   }
 
+  Future<void> destroySession(Session session) async {
+    return await session.docRef.delete();
+  }
+
   Future<Session> getSession(String id) async {
     final DocumentSnapshot doc = await _sessions.doc(id).get();
     return Session.fromSnapshot(doc);
+  }
+
+  Future<void> updateSession(Session session) async {
+    return await session.docRef.update(session.map);
   }
 
   Future<bool> sessionExists(String id) {
     return _docExists(_sessions, id);
   }
 
-
   Future<void> addSelf(Session session) async {
     final Participant self = await ParticipantRepo().createParticipant();
     session.participants.add(self);
+    await session.docRef.update(session.map);
+  }
+
+  Future<Participant> self(Session session) async {
+    final String self = await ParticipantRepo().currentDeviceId();
+    return session.participants.firstWhere(
+        (participant) => participant.deviceId == self,
+        orElse: () => null);
+  }
+
+  Future<void> removeSelf(Session session) async {
+    final Participant self = await this.self(session);
+    if (self == null) return;
+
+    session.participants.remove(self);
     await session.docRef.update(session.map);
   }
 
