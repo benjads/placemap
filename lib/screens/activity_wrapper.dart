@@ -1,0 +1,52 @@
+import 'package:flutter/material.dart';
+import 'package:placemap/models/app_data.dart';
+import 'package:placemap/models/session.dart';
+import 'package:provider/provider.dart';
+
+class ActivityWrapper extends StatelessWidget {
+  final Widget child;
+
+  ActivityWrapper({Key key, this.child}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Consumer<AppData>(
+      builder: (context, appData, child) {
+        final String stateRoute =
+            ModalRoute.of(context).settings.name;
+
+        if (stateRoute != null && !stateRoute.startsWith(appData.session.state.route)) {
+         Future.microtask(() =>  Navigator.popAndPushNamed(context, appData.session.state.route));
+        }
+
+        return Stack(
+          children: [
+            Positioned.fill(child: child),
+            Positioned(
+              top: 80,
+              left: 20,
+              child: Material(
+                shape: CircleBorder(),
+                color: theme.colorScheme.primaryVariant,
+                child: Container(
+                  height: 60.0,
+                  width: 60.0,
+                  child: Center(
+                    child: Text(
+                      appData.session.participantCount.toString(),
+                      style: theme.textTheme.headline4
+                          .copyWith(color: Colors.white),
+                    ),
+                  ),
+                ),
+              ),
+            )
+          ],
+        );
+      },
+      child: child,
+    );
+  }
+}

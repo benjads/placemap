@@ -10,12 +10,14 @@ class AppData extends ChangeNotifier {
   String _sessionId;
   Session _session;
   StreamSubscription _sessionSub;
+  bool _host = false;
 
   Session get session => _session;
   String get sessionId => _sessionId;
+  bool get host => _host;
 
-  Future<Session> createSession() async {
-    if (_session != null)
+  Future<Session> getOrCreateSession() async {
+    if (_session != null && _host)
       return _session;
 
     _sessionId = PlacemapUtils.getSessionCode();
@@ -31,6 +33,7 @@ class AppData extends ChangeNotifier {
     await _session.update();
 
     sessionId = _sessionId;
+    _host = true;
     notifyListeners();
 
     return _session;
@@ -44,6 +47,7 @@ class AppData extends ChangeNotifier {
     _session = null;
     _sessionId = null;
     _sessionSub = null;
+    _host = false;
     notifyListeners();
   }
 
@@ -58,7 +62,11 @@ class AppData extends ChangeNotifier {
           .snapshots()
           .listen((doc) {
         _session = Session.fromSnapshot(doc);
+
+        notifyListeners();
       });
+
+      _host = false;
     }
 
     notifyListeners();

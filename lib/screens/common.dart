@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:placemap/models/app_data.dart';
+import 'package:provider/provider.dart';
 
 class PlacemapButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -37,6 +39,7 @@ class DividerText extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
       child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Flexible(
             child: Divider(
@@ -59,6 +62,43 @@ class DividerText extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class ParticipantBubbles extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Consumer<AppData>(
+      builder: (context, appData, _) => Padding(
+        padding: EdgeInsets.symmetric(horizontal: 30),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            for (int i = 0; i < appData.session.participantCount; i++)
+              Padding(
+                padding: EdgeInsets.only(right: 10),
+                child: Material(
+                  shape: CircleBorder(),
+                  color: theme.colorScheme.onPrimary,
+                  child: Container(
+                    height: 60,
+                    width: 60,
+                    child: Center(
+                      child: Text(
+                        i == 0 ? 'You' : 'P${i + 1}',
+                        style: theme.textTheme.headline5
+                            .copyWith(color: theme.colorScheme.primaryVariant),
+                      ),
+                    ),
+                  ),
+                ),
+              )
+          ],
+        ),
       ),
     );
   }

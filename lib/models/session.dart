@@ -46,10 +46,69 @@ class Session extends ChangeNotifier {
       (participant) => participant.deviceId == deviceId,
       orElse: () => null);
 
+  Future<void> addSelf() async {
+    final String deviceId = await PlacemapUtils.currentDeviceId();
+
+    if (_participants.firstWhere(
+            (participant) => participant.deviceId == deviceId,
+            orElse: () => null) !=
+        null) return;
+
+    final participant = Participant.initialize(deviceId);
+
+    _participants.add(participant);
+    return update();
+  }
+
+  Future<void> setSelfTutorial(bool complete) async {
+    final String deviceId = await PlacemapUtils.currentDeviceId();
+    _participants
+        .firstWhere((participant) => participant.deviceId == deviceId)
+        .tutorialComplete = true;
+    update();
+  }
+
+  bool ready() {
+    return _participants.firstWhere(
+            (participant) => !participant.tutorialComplete,
+            orElse: () => null) ==
+        null;
+  }
+
+  int get participantCount => _participants.length;
+
   Future<void> update() async {
     await docRef.set(map);
     notifyListeners();
   }
+
+  static Future<Session> load(String sessionId) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('sessions')
+        .doc(sessionId)
+        .get();
+
+    return doc.exists ? Session.fromSnapshot(doc) : null;
+  }
 }
 
 enum SessionState { waiting, tutorial, trad, postTrade }
+
+extension StateExtension on SessionState {
+  String get route {
+    switch (this) {
+      case SessionState.waiting:
+        return '/';
+      case SessionState.tutorial:
+        return '/tutorial/1';
+      case SessionState.trad:
+        // todo
+        return '/';
+      case SessionState.postTrade:
+        // todo
+        return '/';
+      default:
+        return '/';
+    }
+  }
+}

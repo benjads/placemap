@@ -1,10 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
-import 'package:placemap/models/session.dart';
 import 'package:placemap/screens/about.dart';
 import 'package:placemap/screens/join.dart';
 import 'package:placemap/screens/landing.dart';
+import 'package:placemap/screens/tutorial.dart';
+import 'package:placemap/screens/wait.dart';
 import 'package:placemap/theme.dart';
 import 'package:provider/provider.dart';
 
@@ -46,6 +47,14 @@ class PlacemapApp extends StatelessWidget {
                         return AboutScreen();
                       case '/join':
                         return JoinScreen();
+                      case '/join/wait':
+                        return WaitScreen();
+                      case '/tutorial/1':
+                        return Tutorial1();
+                      case '/tutorial/2':
+                        return Tutorial2();
+                      case '/tutorial/end':
+                        return TutorialScreen.end();
                     }
 
                     return null;
