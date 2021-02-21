@@ -6,6 +6,7 @@ import 'package:placemap/utils.dart';
 class Session extends ChangeNotifier {
   final String id;
   SessionState _state;
+  DocumentReference _tradRef;
   final List<Participant> _participants;
   final DocumentReference docRef;
 
@@ -19,6 +20,7 @@ class Session extends ChangeNotifier {
         id = map['id'],
         _state = SessionState.values
             .firstWhere((state) => (state.toString() == map['state'])),
+        _tradRef = map['tradRef'],
         _participants = (map['participants'] as List<dynamic>)
             .map((participant) =>
                 Participant.fromMap(PlacemapUtils.toMap(participant)))
@@ -27,6 +29,7 @@ class Session extends ChangeNotifier {
   Map<String, dynamic> get map => {
         'id': id,
         'state': _state.toString(),
+        'tradRef': _tradRef ?? null,
         'participants':
             _participants.map((participant) => participant.map).toList()
       };
@@ -77,6 +80,13 @@ class Session extends ChangeNotifier {
 
   int get participantCount => _participants.length;
 
+  DocumentReference get tradRef => _tradRef;
+
+  set tradRef(DocumentReference value) {
+    _tradRef = value;
+    update();
+  }
+
   Future<void> update() async {
     await docRef.set(map);
     notifyListeners();
@@ -102,8 +112,7 @@ extension StateExtension on SessionState {
       case SessionState.tutorial:
         return '/tutorial/1';
       case SessionState.trad:
-        // todo
-        return '/';
+        return '/tradition';
       case SessionState.postTrade:
         // todo
         return '/';

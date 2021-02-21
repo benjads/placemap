@@ -14,10 +14,8 @@ class ActivityWrapper extends StatelessWidget {
 
     return Consumer<AppData>(
       builder: (context, appData, child) {
-        final String stateRoute =
-            ModalRoute.of(context).settings.name;
-
-        if (stateRoute != null && !stateRoute.startsWith(appData.session.state.route)) {
+        if (appData.dirtyScreen) {
+          appData.dirtyScreen = false;
          Future.microtask(() =>  Navigator.popAndPushNamed(context, appData.session.state.route));
         }
 

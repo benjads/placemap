@@ -4,21 +4,24 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/participant.dart';
 import 'package:placemap/models/session.dart';
+import 'package:placemap/models/tradition.dart';
 import 'package:placemap/utils.dart';
 
 class AppData extends ChangeNotifier {
   String _sessionId;
   Session _session;
+  bool dirtyScreen = false;
   StreamSubscription _sessionSub;
   bool _host = false;
+  Tradition _tradition;
 
   Session get session => _session;
   String get sessionId => _sessionId;
   bool get host => _host;
+  Tradition get tradition => _tradition;
 
   Future<Session> getOrCreateSession() async {
-    if (_session != null && _host)
-      return _session;
+    if (_session != null && _host) return _session;
 
     _sessionId = PlacemapUtils.getSessionCode();
     while ((await FirebaseFirestore.instance
@@ -61,9 +64,20 @@ class AppData extends ChangeNotifier {
           .doc(sessionId)
           .snapshots()
           .listen((doc) {
-        _session = Session.fromSnapshot(doc);
+        final newSession = Session.fromSnapshot(doc);
 
-        notifyListeners();
+        if (newSession.state != _session.state) dirtyScreen = true;
+
+        _session = newSession;
+
+        if (_session.tradRef != null) {
+          _session.tradRef.get().then((tradition) {
+            _tradition = Tradition.fromSnapshot(tradition);
+            notifyListeners();
+          });
+        } else {
+          notifyListeners();
+        }
       });
 
       _host = false;

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:placemap/models/session.dart';
+import 'package:placemap/models/tradition.dart';
 import 'package:provider/provider.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
@@ -60,8 +61,7 @@ class TutorialScreen extends StatelessWidget {
         footer: Padding(
           padding: const EdgeInsets.only(bottom: 20),
           child: PlacemapButton(
-            onPressed: () =>
-              Navigator.pushNamed(context, next),
+            onPressed: () => Navigator.pushNamed(context, next),
             text: nextText,
           ),
         ),
@@ -80,7 +80,9 @@ class FinishButton extends StatelessWidget {
       builder: (context, appData, _) {
         if (appData.session.ready()) {
           return PlacemapButton(
-              onPressed: () {
+              onPressed: () async {
+                appData.session.tradRef =
+                    (await Tradition.random()).docRef;
                 appData.session.state = SessionState.trad;
               },
               text: "Let's Go!");

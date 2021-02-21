@@ -1,9 +1,11 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
+import 'package:placemap/models/preferences.dart';
 import 'package:placemap/screens/about.dart';
 import 'package:placemap/screens/join.dart';
 import 'package:placemap/screens/landing.dart';
+import 'package:placemap/screens/tradition_overview.dart';
 import 'package:placemap/screens/tutorial.dart';
 import 'package:placemap/screens/wait.dart';
 import 'package:placemap/theme.dart';
@@ -31,6 +33,7 @@ class PlacemapApp extends StatelessWidget {
         if (snapshot.connectionState == ConnectionState.done) {
           return MultiProvider(
             providers: [
+              ChangeNotifierProvider<Preferences>(create: (_) => Preferences()),
               ChangeNotifierProvider<AppData>(create: (_) => AppData()),
             ],
             child: MaterialApp(
@@ -55,6 +58,8 @@ class PlacemapApp extends StatelessWidget {
                         return Tutorial2();
                       case '/tutorial/end':
                         return TutorialScreen.end();
+                      case '/tradition':
+                        return TraditionView();
                     }
 
                     return null;
