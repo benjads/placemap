@@ -10,6 +10,11 @@ class PlacemapUtils {
     return Map<String, dynamic>.from(data);
   }
 
+  static Map<String, int> toStringIntMap(Map<dynamic, dynamic> data) {
+    return Map<String, int>.from(data);
+  }
+
+
   static Future<String> currentDeviceId() async {
     if (Platform.isAndroid) {
       return (await _deviceInfoPlugin.androidInfo).id;

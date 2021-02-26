@@ -98,11 +98,12 @@ class AppData extends ChangeNotifier {
   }
 
   Future<TraditionReview> createReview() async {
-    if (_review.sessionRef == _session.docRef) {
+    if (_review != null && _review.sessionRef == _session.docRef) {
       return _review;
     }
 
     _review = TraditionReview(_session.docRef, _tradition.docRef);
+    await _review.update();
     _session.tradReviewRef = _review.docRef;
     await _session.update();
     notifyListeners();

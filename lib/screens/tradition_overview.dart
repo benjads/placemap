@@ -220,7 +220,7 @@ class TraditionPost extends StatelessWidget {
               ),
               SizedBox(height: 20),
               Text(
-                'TRY IT OUT',
+                'TRY IT OUT!',
                 style: theme.textTheme.headline2
                     .copyWith(fontWeight: FontWeight.bold),
               ),
