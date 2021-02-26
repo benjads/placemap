@@ -8,6 +8,7 @@ import 'package:placemap/screens/landing.dart';
 import 'package:placemap/screens/tradition_overview.dart';
 import 'package:placemap/screens/tutorial.dart';
 import 'package:placemap/screens/wait.dart';
+import 'package:placemap/speech_service.dart';
 import 'package:placemap/theme.dart';
 import 'package:provider/provider.dart';
 
@@ -35,6 +36,7 @@ class PlacemapApp extends StatelessWidget {
             providers: [
               ChangeNotifierProvider<Preferences>(create: (_) => Preferences()),
               ChangeNotifierProvider<AppData>(create: (_) => AppData()),
+              Provider<SpeechService>(create: (_) => SpeechService()),
             ],
             child: MaterialApp(
               title: 'Placemap',

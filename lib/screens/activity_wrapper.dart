@@ -36,6 +36,7 @@ class ActivityWrapper extends StatelessWidget {
                       appData.session.participantCount.toString(),
                       style: theme.textTheme.headline4
                           .copyWith(color: Colors.white),
+                      textAlign: TextAlign.center,
                     ),
                   ),
                 ),

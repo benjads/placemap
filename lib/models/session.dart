@@ -7,6 +7,7 @@ class Session extends ChangeNotifier {
   final String id;
   SessionState _state;
   DocumentReference _tradRef;
+  DocumentReference _tradReviewRef;
   final List<Participant> _participants;
   final DocumentReference docRef;
 
@@ -21,6 +22,7 @@ class Session extends ChangeNotifier {
         _state = SessionState.values
             .firstWhere((state) => (state.toString() == map['state'])),
         _tradRef = map['tradRef'],
+        _tradReviewRef = map['tradReviewRef'],
         _participants = (map['participants'] as List<dynamic>)
             .map((participant) =>
                 Participant.fromMap(PlacemapUtils.toMap(participant)))
@@ -30,6 +32,7 @@ class Session extends ChangeNotifier {
         'id': id,
         'state': _state.toString(),
         'tradRef': _tradRef ?? null,
+        'tradReviewRef': _tradReviewRef ?? null,
         'participants':
             _participants.map((participant) => participant.map).toList()
       };
@@ -87,6 +90,14 @@ class Session extends ChangeNotifier {
     update();
   }
 
+
+  DocumentReference get tradReviewRef => _tradReviewRef;
+
+  set tradReviewRef(DocumentReference value) {
+    _tradReviewRef = value;
+    update();
+  }
+
   Future<void> update() async {
     await docRef.set(map);
     notifyListeners();
@@ -102,7 +113,7 @@ class Session extends ChangeNotifier {
   }
 }
 
-enum SessionState { waiting, tutorial, trad, postTrade }
+enum SessionState { waiting, tutorial, trad, review }
 
 extension StateExtension on SessionState {
   String get route {
@@ -113,9 +124,8 @@ extension StateExtension on SessionState {
         return '/tutorial/1';
       case SessionState.trad:
         return '/tradition';
-      case SessionState.postTrade:
-        // todo
-        return '/';
+      case SessionState.review:
+        return '/review';
       default:
         return '/';
     }

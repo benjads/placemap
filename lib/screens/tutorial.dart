@@ -83,6 +83,7 @@ class FinishButton extends StatelessWidget {
               onPressed: () async {
                 appData.session.tradRef =
                     (await Tradition.random()).docRef;
+                appData.dirtyScreen = true;
                 appData.session.state = SessionState.trad;
               },
               text: "Let's Go!");

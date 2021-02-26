@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:placemap/models/participant.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/models/tradition.dart';
+import 'package:placemap/models/tradition_review.dart';
 import 'package:placemap/utils.dart';
 
 class AppData extends ChangeNotifier {
@@ -14,11 +15,13 @@ class AppData extends ChangeNotifier {
   StreamSubscription _sessionSub;
   bool _host = false;
   Tradition _tradition;
+  TraditionReview _review;
 
   Session get session => _session;
   String get sessionId => _sessionId;
   bool get host => _host;
   Tradition get tradition => _tradition;
+  TraditionReview get review => _review;
 
   Future<Session> getOrCreateSession() async {
     if (_session != null && _host) return _session;
@@ -50,6 +53,7 @@ class AppData extends ChangeNotifier {
     _session = null;
     _sessionId = null;
     _sessionSub = null;
+    _review = null;
     _host = false;
     notifyListeners();
   }
@@ -73,6 +77,13 @@ class AppData extends ChangeNotifier {
         if (_session.tradRef != null) {
           _session.tradRef.get().then((tradition) {
             _tradition = Tradition.fromSnapshot(tradition);
+
+            if (_session.tradReviewRef != null) {
+              _session.tradReviewRef.get().then((review) {
+                _review = TraditionReview.fromSnapshot(review);
+              });
+            }
+
             notifyListeners();
           });
         } else {
@@ -84,5 +95,18 @@ class AppData extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<TraditionReview> createReview() async {
+    if (_review.sessionRef == _session.docRef) {
+      return _review;
+    }
+
+    _review = TraditionReview(_session.docRef, _tradition.docRef);
+    _session.tradReviewRef = _review.docRef;
+    await _session.update();
+    notifyListeners();
+
+    return _review;
   }
 }

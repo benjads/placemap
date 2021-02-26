@@ -1,12 +1,24 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_tts/flutter_tts.dart';
 import 'package:placemap/models/app_data.dart';
+import 'package:placemap/models/session.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
 import 'package:placemap/screens/common.dart';
+import 'package:placemap/speech_service.dart';
 import 'package:provider/provider.dart';
 
-class TraditionView extends StatelessWidget {
-  final FlutterTts tts = FlutterTts();
+class TraditionView extends StatefulWidget {
+  @override
+  _TraditionViewState createState() => _TraditionViewState();
+}
+
+class _TraditionViewState extends State<TraditionView> {
+  @override
+  void initState() {
+    super.initState();
+    final SpeechService speechService = context.read<SpeechService>();
+    final AppData appData = context.read<AppData>();
+    speechService.speak(appData.tradition.ttsDesc);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -41,26 +53,34 @@ enum TraditionState { overview, extended, post }
 class _TraditionContentState extends State<TraditionContent> {
   TraditionState _traditionState = TraditionState.overview;
 
-  void openExtended() {
+  void _openExtended() {
     setState(() {
       _traditionState = TraditionState.extended;
     });
   }
 
-  void end() {
+  void _end() {
     setState(() {
       _traditionState = TraditionState.post;
     });
+  }
+
+  void _review() {
+    final AppData appData = context.read<AppData>();
+    appData.createReview();
+    appData.session.state = SessionState.review;
+    Navigator.popAndPushNamed(context, '/review');
   }
 
   @override
   Widget build(BuildContext context) {
     switch (_traditionState) {
       case TraditionState.overview:
-        return TraditionOverview(openExtended, end);
+        return TraditionOverview(_openExtended, _end);
       case TraditionState.extended:
-        return TraditionExtended(end);
+        return TraditionExtended(_end);
       case TraditionState.post:
+        return TraditionPost(_review);
       default:
         return Container(child: null);
     }
@@ -155,6 +175,85 @@ class TraditionExtended extends StatelessWidget {
             SizedBox(height: 20),
             PlacemapButton(onPressed: end, text: 'GOT IT!'),
           ],
+        ));
+  }
+}
+
+class TraditionPost extends StatelessWidget {
+
+  final VoidCallback review;
+
+  TraditionPost(this.review);
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final AppData appData = context.read<AppData>();
+
+    return Container(
+        padding: EdgeInsets.only(top: 80),
+        decoration: BoxDecoration(
+          image: DecorationImage(
+            image: AssetImage('graphics/cincin.jpg'),
+            fit: BoxFit.cover,
+            colorFilter: ColorFilter.mode(
+                theme.colorScheme.primary.withOpacity(0.2), BlendMode.dstATop),
+          ),
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [
+              theme.colorScheme.primary,
+              theme.colorScheme.primaryVariant
+            ],
+          ),
+        ),
+        child: Padding(
+          padding: EdgeInsets.symmetric(horizontal: 40),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text(
+                'NOW THAT YOU KNOW ALL ABOUT "${appData.tradition.name.toUpperCase()}", IT\'S TIME FOR YOU TO',
+                style: theme.textTheme.headline5,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              Text(
+                'TRY IT OUT',
+                style: theme.textTheme.headline2
+                    .copyWith(fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 40),
+              Text(
+                'WHEN YOU FEEL YOU WANT TO',
+                style: theme.textTheme.bodyText1,
+              ),
+              SizedBox(height: 10),
+              PlacemapButton(onPressed: () {}, text: 'SEARCH AGAIN'),
+              SizedBox(height: 10),
+              Text(
+                'PRESS THIS BUTTON TO FIND SIMILAR TRADITIONS, YOU CAN ALSO',
+                style: theme.textTheme.bodyText1,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
+              PlacemapButton(onPressed: () {}, text: 'TAKE A BREAK'),
+              SizedBox(height: 10),
+              Text(
+                'AND DO ANOTHER SEARCH LATER',
+                style: theme.textTheme.bodyText1,
+              ),
+              SizedBox(height: 40),
+              Text(
+                'IF YOU WANT YOU CAN ALSO',
+                style: theme.textTheme.bodyText1,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
+              PlacemapButton(onPressed: review, text: 'RATE THIS TRADITION'),
+            ],
+          ),
         ));
   }
 }

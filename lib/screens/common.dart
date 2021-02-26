@@ -23,6 +23,8 @@ class PlacemapButton extends StatelessWidget {
         onPressed: onPressed,
         child: Text(
           text.toUpperCase(),
+          style: theme.textTheme.headline5,
+          textAlign: TextAlign.center,
         ));
   }
 }
