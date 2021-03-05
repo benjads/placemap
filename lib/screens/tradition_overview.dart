@@ -1,10 +1,14 @@
+import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
+import 'package:placemap/models/preferences.dart';
 import 'package:placemap/models/session.dart';
+import 'package:placemap/models/tradition.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
 import 'package:placemap/screens/common.dart';
 import 'package:placemap/speech_service.dart';
 import 'package:provider/provider.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class TraditionView extends StatefulWidget {
   @override
@@ -19,11 +23,14 @@ class _TraditionViewState extends State<TraditionView> {
     super.initState();
     final SpeechService speechService = context.read<SpeechService>();
     final AppData appData = context.read<AppData>();
-    speechService.speak(appData.tradition.ttsDesc);
-    appData.tradition.cacheImages(context).whenComplete(() => setState(() {
-      _cached = true;
-      speechService.speak(appData.tradition.ttsDesc);
-    }));
+    final Preferences prefs = context.read<Preferences>();
+    appData.tradition.cacheImages(context).whenComplete(() {
+      setState(() {
+        _cached = true;
+      });
+
+      if (prefs.sound) speechService.speak(appData.tradition.ttsDesc);
+    });
   }
 
   @override
@@ -41,17 +48,47 @@ class _TraditionViewState extends State<TraditionView> {
         child: Stack(
           children: [
             Positioned.fill(child: TraditionContent()),
-            Positioned(
-              top: 80,
-              right: 40,
-              child: Icon(
-                Icons.volume_up_sharp,
-                size: 40,
-                color: Colors.white,
-              ),
-            ),
+            Positioned(top: 80, right: 40, child: TtsButton()),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class TtsButton extends StatefulWidget {
+  @override
+  _TtsButtonState createState() => _TtsButtonState();
+}
+
+class _TtsButtonState extends State<TtsButton> {
+  void _soundTap() {
+    final SpeechService speechService = context.read<SpeechService>();
+    final AppData appData = context.read<AppData>();
+    final Preferences prefs = context.read<Preferences>();
+
+    setState(() {
+      if (speechService.playing) {
+        speechService.stop();
+        prefs.sound = false;
+      } else {
+        prefs.sound
+            ? speechService.speak(appData.tradition.ttsDesc)
+            : prefs.sound = true;
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Preferences prefs = context.read<Preferences>();
+
+    return GestureDetector(
+      onTap: _soundTap,
+      child: Icon(
+        prefs.sound ? Icons.volume_up_sharp : Icons.volume_off,
+        size: 40,
+        color: prefs.sound ? Colors.white : Colors.red,
       ),
     );
   }
@@ -115,10 +152,11 @@ class TraditionOverview extends StatelessWidget {
     return Container(
       padding: EdgeInsets.only(top: 80),
       decoration: BoxDecoration(
-          image: DecorationImage(
-        image: appData.tradition.cachedCoverImg.image,
-        fit: BoxFit.cover,
-      )),
+        image: DecorationImage(
+          image: appData.tradition.cachedCoverImg.image,
+          fit: BoxFit.cover,
+        ),
+      ),
       child: Stack(
         alignment: Alignment.topCenter,
         children: [
@@ -126,15 +164,25 @@ class TraditionOverview extends StatelessWidget {
             top: 0,
             child: Column(
               children: [
-                Text(
-                  appData.tradition.name,
-                  style:
-                      theme.textTheme.headline3.copyWith(color: Colors.white),
+                Container(
+                  alignment: Alignment.center,
+                  width: 240,
+                  child: StrokeText(
+                    appData.tradition.name,
+                    style: theme.textTheme.headline3,
+                    color: Colors.white,
+                    strokeColor: theme.colorScheme.primaryVariant,
+                    strokeWidth: 1,
+                  ),
                 ),
                 SizedBox(height: 10),
-                Text('(${appData.tradition.origin})',
-                    style: theme.textTheme.headline6.copyWith(
-                        color: Colors.white, fontWeight: FontWeight.bold)),
+                StrokeText(
+                  '(${appData.tradition.origin})',
+                  style: theme.textTheme.headline6,
+                  color: Colors.white,
+                  strokeColor: theme.colorScheme.primaryVariant,
+                  strokeWidth: 1,
+                ),
               ],
             ),
           ),
@@ -166,30 +214,120 @@ class TraditionExtended extends StatelessWidget {
     final AppData appData = context.read<AppData>();
 
     return Container(
-        padding: EdgeInsets.only(top: 80),
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [theme.colorScheme.primary, theme.colorScheme.primaryVariant],
-        )),
-        child: Column(
-          children: [
-            Text(appData.tradition.name,
-                style: theme.textTheme.headline3.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                )),
-            SizedBox(height: 30),
-            Padding(
-              padding: EdgeInsets.symmetric(horizontal: 40),
-              child: Text(appData.tradition.fullDesc,
-                  style: theme.textTheme.bodyText1),
-            ),
-            SizedBox(height: 20),
-            PlacemapButton(onPressed: end, text: 'GOT IT!'),
-          ],
+      padding: EdgeInsets.only(top: 80),
+      decoration: BoxDecoration(
+          gradient: LinearGradient(
+        begin: Alignment.topCenter,
+        end: Alignment.bottomCenter,
+        colors: [theme.colorScheme.primary, theme.colorScheme.primaryVariant],
+      )),
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              Container(
+                alignment: Alignment.center,
+                width: 240,
+                child: Text(
+                  appData.tradition.name,
+                  style: theme.textTheme.headline3.copyWith(
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              SizedBox(height: 20),
+              Expanded(
+                child: ListView(
+                  children: [
+                    TraditionMedia(),
+                    const SizedBox(height: 20),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(20, 20, 20, 80),
+                      child: Text(appData.tradition.fullDesc,
+                          style: theme.textTheme.bodyText1),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          Positioned(
+            bottom: 10,
+            right: 10,
+            child: PlacemapButton(onPressed: end, text: 'GOT IT!'),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class TraditionMedia extends StatefulWidget {
+  @override
+  _TraditionMediaState createState() => _TraditionMediaState();
+}
+
+class _TraditionMediaState extends State<TraditionMedia> {
+  YoutubePlayerController _ytController;
+
+  List<Widget> _generateMedia(Tradition tradition) {
+    final media = List<Widget>();
+
+    if (tradition.videoUri != null) {
+      _ytController = YoutubePlayerController(
+        initialVideoId: YoutubePlayer.convertUrlToId(tradition.videoUri),
+        flags: YoutubePlayerFlags(
+          autoPlay: true,
+          disableDragSeek: true,
+          mute: false,
+          enableCaption: false,
+        ),
+      );
+
+      media.add(YoutubePlayer(
+        controller: _ytController,
+        showVideoProgressIndicator: true,
+        bottomActions: [
+          const SizedBox(width: 14),
+          CurrentPosition(),
+          const SizedBox(width: 8),
+          ProgressBar(
+            isExpanded: true,
+          ),
+          RemainingDuration(),
+        ],
+      ));
+    }
+
+    if (tradition.photos != null) {
+      tradition.cachedPhotos.forEach((image) {
+        media.add(Image(
+          image: image.image,
         ));
+      });
+    }
+
+    return media;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final AppData appData = context.read<AppData>();
+
+    final items = _generateMedia(appData.tradition);
+
+    if (items.isEmpty) return SizedBox.shrink();
+
+    return CarouselSlider(
+      options: CarouselOptions(
+          height: 200,
+          onPageChanged: (idx, _) {
+            if (_ytController.value.isPlaying) _ytController.pause();
+          }),
+      items: _generateMedia(appData.tradition),
+    );
   }
 }
 

@@ -105,3 +105,49 @@ class ParticipantBubbles extends StatelessWidget {
     );
   }
 }
+
+class StrokeText extends StatelessWidget {
+  final String text;
+  final TextStyle style;
+  final Color color;
+  final Color strokeColor;
+  final double strokeWidth;
+
+  const StrokeText(
+      this.text, {
+        Key key,
+        @required this.style,
+        @required this.color,
+        @required this.strokeColor,
+        @required this.strokeWidth,
+      }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: style.fontSize,
+            fontWeight: style.fontWeight,
+            foreground: Paint()..color = color,
+          ),
+        ),
+        Text(
+          text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: style.fontSize,
+            fontWeight: style.fontWeight,
+            foreground: Paint()
+              ..strokeWidth = strokeWidth
+              ..color = strokeColor
+              ..style = PaintingStyle.stroke,
+          ),
+        ),
+      ],
+    );
+  }
+}

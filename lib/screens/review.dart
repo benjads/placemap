@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -77,7 +79,6 @@ class ReviewResultsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final AppData appData = context.read<AppData>();
 
     return Padding(
       padding: EdgeInsets.fromLTRB(40, 40, 40, 0),
@@ -92,41 +93,70 @@ class ReviewResultsView extends StatelessWidget {
           SizedBox(height: 30),
           Text(
             "HERE'S HOW THE REST OF THE GROUP LIKED IT. "
-            "DO YOU AGREE?",
+                "DO YOU AGREE?",
             style: theme.textTheme.headline6,
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 10),
           PlacemapButton(onPressed: () {}, text: 'BACK TO SEARCH'),
           SizedBox(height: 30),
-          StreamBuilder<DocumentSnapshot>(
-              stream: appData.review.docRef.snapshots(),
-              builder: (context, snapshot) {
-                if (!snapshot.hasData) {
-                  return CircularProgressIndicator();
-                }
-
-                final review = TraditionReview.fromSnapshot(snapshot.data);
-                final map = review.ratingsMap();
-
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    Column(
-                      children: [
-                        FaceSelect('😍', 5, map[5], null),
-                        FaceSelect('😀', 4, map[4], null),
-                        FaceSelect('🙄', 3, map[3], null),
-                        FaceSelect('😵', 2, map[2], null),
-                        FaceSelect('🤮', 1, map[1], null),
-                      ],
-                    ),
-                    RatingBar(review.avgRating()),
-                  ],
-                );
-              })
+          ReviewResultsInner(),
         ],
       ),
+    );
+  }
+}
+
+class ReviewResultsInner extends StatefulWidget {
+  @override
+  _ReviewResultsInnerState createState() => _ReviewResultsInnerState();
+}
+
+class _ReviewResultsInnerState extends State<ReviewResultsInner> {
+  TraditionReview _review;
+  StreamSubscription<DocumentSnapshot> _sub;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final AppData appData = context.read<AppData>();
+    _sub = appData.review.docRef.snapshots().listen((snapshot) {
+      setState(() {
+        _review = TraditionReview.fromSnapshot(snapshot);
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _sub.cancel();
+  }
+
+  int count(int rating) {
+    if (_review == null)
+      return 0;
+
+    return _review.ratingsMap()[rating];
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        Column(
+          children: [
+            FaceSelect('😍', 5, count(5), null),
+            FaceSelect('😀', 4, count(4), null),
+            FaceSelect('🙄', 3, count(3), null),
+            FaceSelect('😵', 2, count(2), null),
+            FaceSelect('🤮', 1, count(1), null),
+          ],
+        ),
+        RatingBar(_review?.avgRating() ?? 0),
+      ],
     );
   }
 }
@@ -175,7 +205,6 @@ class FaceSelect extends StatelessWidget {
 }
 
 class RatingBar extends StatelessWidget {
-
   final avgRating;
 
   RatingBar(this.avgRating);
@@ -195,10 +224,19 @@ class RatingBar extends StatelessWidget {
               width: 150,
               color: Colors.white,
             ),
-            Container(
+            AnimatedContainer(
+              duration: Duration(seconds: 2),
               height: (avgRating / 5) * 400,
               width: 150,
-              color: Colors.white.withOpacity(0.4),
+              decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [
+                      Colors.white.withOpacity(0.2),
+                      Colors.white.withOpacity(0.6),
+                    ],
+                  )),
             ),
           ],
         ),

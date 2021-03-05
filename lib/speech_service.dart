@@ -18,4 +18,10 @@ class SpeechService {
 
     _tts.speak(message);
   }
+
+  void stop() {
+    _tts.stop();
+  }
+
+  bool get playing => _playing;
 }

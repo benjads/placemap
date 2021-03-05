@@ -29,8 +29,9 @@ dependencies:
   provider: ^4.3.3
   device_info: ^1.0.0
   flutter_tts: ^2.1.0
-  video_player: ^1.0.1
+  youtube_player_flutter: ^7.0.0+7
   google_fonts: ^1.1.2
+  carousel_slider: ^3.0.0
 
 dev_dependencies:
   flutter_test:

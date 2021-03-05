@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/preferences.dart';
 import 'package:placemap/screens/about.dart';
@@ -23,6 +24,11 @@ class PlacemapApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
+
     return FutureBuilder(
       future: _initialization,
       builder: (context, snapshot) {
