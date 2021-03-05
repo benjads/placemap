@@ -12,16 +12,30 @@ class TraditionView extends StatefulWidget {
 }
 
 class _TraditionViewState extends State<TraditionView> {
+  bool _cached = false;
+
   @override
   void initState() {
     super.initState();
     final SpeechService speechService = context.read<SpeechService>();
     final AppData appData = context.read<AppData>();
     speechService.speak(appData.tradition.ttsDesc);
+    appData.tradition.cacheImages(context).whenComplete(() => setState(() {
+      _cached = true;
+      speechService.speak(appData.tradition.ttsDesc);
+    }));
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!_cached) {
+      return Scaffold(
+        body: Center(
+          child: CircularProgressIndicator(),
+        ),
+      );
+    }
+
     return Scaffold(
       body: ActivityWrapper(
         child: Stack(
@@ -102,7 +116,7 @@ class TraditionOverview extends StatelessWidget {
       padding: EdgeInsets.only(top: 80),
       decoration: BoxDecoration(
           image: DecorationImage(
-        image: AssetImage('graphics/cincin.jpg'),
+        image: appData.tradition.cachedCoverImg.image,
         fit: BoxFit.cover,
       )),
       child: Stack(
@@ -180,7 +194,6 @@ class TraditionExtended extends StatelessWidget {
 }
 
 class TraditionPost extends StatelessWidget {
-
   final VoidCallback review;
 
   TraditionPost(this.review);
@@ -194,7 +207,7 @@ class TraditionPost extends StatelessWidget {
         padding: EdgeInsets.only(top: 80),
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: AssetImage('graphics/cincin.jpg'),
+            image: appData.tradition.cachedCoverImg.image,
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
                 theme.colorScheme.primary.withOpacity(0.2), BlendMode.dstATop),

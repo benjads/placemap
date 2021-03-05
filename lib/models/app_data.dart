@@ -59,6 +59,10 @@ class AppData extends ChangeNotifier {
   }
 
   set sessionId(String sessionId) {
+    _setSessionId(sessionId);
+  }
+
+  void _setSessionId(String sessionId) async {
     _sessionId = sessionId;
     _sessionSub?.cancel();
 
@@ -67,7 +71,7 @@ class AppData extends ChangeNotifier {
           .collection('sessions')
           .doc(sessionId)
           .snapshots()
-          .listen((doc) {
+          .listen((doc) async {
         final newSession = Session.fromSnapshot(doc);
 
         if (newSession.state != _session.state) dirtyScreen = true;
@@ -75,20 +79,16 @@ class AppData extends ChangeNotifier {
         _session = newSession;
 
         if (_session.tradRef != null) {
-          _session.tradRef.get().then((tradition) {
-            _tradition = Tradition.fromSnapshot(tradition);
+          final traditionSnapshot = await _session.tradRef.get();
+          _tradition = Tradition.fromSnapshot(traditionSnapshot);
 
-            if (_session.tradReviewRef != null) {
-              _session.tradReviewRef.get().then((review) {
-                _review = TraditionReview.fromSnapshot(review);
-              });
-            }
-
-            notifyListeners();
-          });
-        } else {
-          notifyListeners();
+          if (_session.tradReviewRef != null) {
+            final tradReviewSnapshot = await _session.tradReviewRef.get();
+            _review = TraditionReview.fromSnapshot(tradReviewSnapshot);
+          }
         }
+
+        notifyListeners();
       });
 
       _host = false;

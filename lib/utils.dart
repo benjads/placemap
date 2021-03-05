@@ -14,6 +14,10 @@ class PlacemapUtils {
     return Map<String, int>.from(data);
   }
 
+  static List<String> toStringList(List<dynamic> data) {
+    return List<String>.from(data);
+  }
+
 
   static Future<String> currentDeviceId() async {
     if (Platform.isAndroid) {

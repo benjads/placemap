@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:placemap/models/session.dart';
 import 'package:placemap/utils.dart';
 
 class TraditionReview {
@@ -56,5 +57,11 @@ class TraditionReview {
     int total = 0;
     _ratings.forEach((key, value) => total += value);
     return total / _ratings.length;
+  }
+
+  static Future<List<TraditionReview>> allReviews(Session session) async {
+    final reviews = await session.docRef.collection('reviews').get();
+    return reviews.docs
+        .map((snapshot) => TraditionReview.fromSnapshot(snapshot)).toList();
   }
 }
