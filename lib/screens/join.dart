@@ -62,7 +62,7 @@ class CreateSection extends StatelessWidget {
             SizedBox(height: 10),
             PlacemapButton(
                 onPressed: () {
-                  appData.session.state = SessionState.tutorial;
+                  appData.session.setState(SessionState.tutorial, true);
                   Navigator.pushNamed(context, '/tutorial/1');
                 },
                 text: "WE'RE READY"),

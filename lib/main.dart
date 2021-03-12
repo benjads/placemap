@@ -7,6 +7,7 @@ import 'package:placemap/screens/about.dart';
 import 'package:placemap/screens/join.dart';
 import 'package:placemap/screens/landing.dart';
 import 'package:placemap/screens/review.dart';
+import 'package:placemap/screens/search.dart';
 import 'package:placemap/screens/tradition_overview.dart';
 import 'package:placemap/screens/tutorial.dart';
 import 'package:placemap/screens/wait.dart';
@@ -71,6 +72,8 @@ class PlacemapApp extends StatelessWidget {
                         return TraditionView();
                       case '/review':
                         return ReviewScreen();
+                      case '/search':
+                        return SearchScreen();
                     }
 
                     return null;

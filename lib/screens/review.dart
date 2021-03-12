@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:placemap/models/app_data.dart';
+import 'package:placemap/models/session.dart';
 import 'package:placemap/models/tradition_review.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
 import 'package:placemap/screens/common.dart';
@@ -51,11 +52,7 @@ class ReviewSelectView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'PlaceMap',
-            style: GoogleFonts.nanumBrushScript(
-                textStyle: theme.textTheme.headline3),
-          ),
+          LogoText(),
           SizedBox(height: 30),
           Text(
             "CHOOSE A FACE THAT DESCRIBES HOW MUCH YOU "
@@ -76,6 +73,13 @@ class ReviewSelectView extends StatelessWidget {
 }
 
 class ReviewResultsView extends StatelessWidget {
+  
+  void _search(BuildContext context) {
+    final AppData appData = context.read<AppData>();
+    appData.session.setState(SessionState.search, true);
+    Navigator.popAndPushNamed(context, '/search');
+  }
+  
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -98,7 +102,7 @@ class ReviewResultsView extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 10),
-          PlacemapButton(onPressed: () {}, text: 'BACK TO SEARCH'),
+          PlacemapButton(onPressed: () => _search(context), text: 'BACK TO SEARCH'),
           SizedBox(height: 30),
           ReviewResultsInner(),
         ],

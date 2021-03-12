@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/tradition_review.dart';
 import 'package:placemap/utils.dart';
-import 'package:provider/provider.dart';
 
 class Tradition {
   final String name;
@@ -57,14 +56,14 @@ class Tradition {
         keywords = PlacemapUtils.toStringList(map['keywords']),
         allowedFirst = map['allowedFirst'];
 
-  Future<void> cacheImages(BuildContext context) async {
+  Future<void> cacheImages(BuildContext context, bool includePhotos) async {
     final coverImgUrl = await FirebaseStorage.instance
         .ref('traditions/$coverImg')
         .getDownloadURL();
     _cachedCoverImg = Image.network(coverImgUrl);
     await precacheImage(_cachedCoverImg.image, context);
 
-    if (photos != null) {
+    if (photos != null && includePhotos) {
       _cachedPhotos = List<Image>();
       photos.forEach((photo) async {
         var photoUrl = await FirebaseStorage.instance
@@ -81,29 +80,67 @@ class Tradition {
 
   List<Image> get cachedPhotos => _cachedPhotos;
 
-  static Future<Tradition> random(BuildContext context) async {
-    final appData = context.read<AppData>();
-    final session = appData.session;
-
-    final reviews = await TraditionReview.allReviews(session);
-    final priorTraditions = reviews.map((review) => review.docRef);
+  static Future<List<Tradition>> allTraditions() async {
     final traditionsSnapshot =
         await FirebaseFirestore.instance.collection('traditions').get();
-    final traditions = traditionsSnapshot.docs
+    return traditionsSnapshot.docs
         .map((snapshot) => Tradition.fromSnapshot(snapshot))
         .toList();
+  }
+
+  static Future<Tradition> random(AppData appData) async {
+    final List<Tradition> traditions = await allTraditions();
+    final List<TraditionReview> reviews =
+        await TraditionReview.allReviews(appData.session);
 
     final rng = Random();
-    final isFirst = reviews.length == 0;
+    final isFirst = traditions.length == 0;
 
     var idx = rng.nextInt(traditions.length);
     var tradition = traditions[idx];
-    while (priorTraditions.contains(tradition.docRef) ||
+    while (reviews
+            .map((review) => review.tradRef)
+            .toList()
+            .contains(tradition.docRef) ||
         (isFirst && !tradition.allowedFirst)) {
       idx = rng.nextInt(traditions.length);
       tradition = traditions[idx];
     }
 
     return tradition;
+  }
+
+  static Future<List<Tradition>> randomList(
+      AppData appData, int count, String keyword) async {
+    List<Tradition> traditions = await allTraditions();
+    if (keyword != null) {
+      traditions = traditions
+          .where((tradition) => tradition.keywords.contains(keyword))
+          .toList();
+    }
+
+    final List<TraditionReview> reviews =
+        await TraditionReview.allReviews(appData.session);
+    reviews.forEach((review) => traditions.remove(
+        traditions.where((tradition) => tradition.docRef == review.tradRef)));
+
+    final seed = appData.session.participantCount * reviews.length;
+    final rng = Random(seed);
+
+    final List<Tradition> results = List<Tradition>();
+
+    while (results.length < count && traditions.isNotEmpty) {
+      var idx = rng.nextInt(traditions.length);
+      var tradition = traditions[idx];
+      results.add(tradition);
+      traditions.remove(tradition);
+    }
+
+    return results;
+  }
+
+  static String randomKeyword(Tradition tradition) {
+    final Random rng = Random();
+    return tradition.keywords[rng.nextInt(tradition.keywords.length)];
   }
 }

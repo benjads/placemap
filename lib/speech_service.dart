@@ -20,6 +20,9 @@ class SpeechService {
   }
 
   void stop() {
+    if (!_playing)
+      return;
+
     _tts.stop();
   }
 

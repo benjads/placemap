@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/participant.dart';
@@ -43,9 +45,11 @@ class Session extends ChangeNotifier {
 
   SessionState get state => _state;
 
-  set state(SessionState state) {
+
+  void setState(SessionState state, bool refresh) {
     _state = state;
-    update();
+    if (refresh)
+      update();
   }
 
   Participant getParticipant(String deviceId) => _participants.firstWhere(
@@ -93,12 +97,14 @@ class Session extends ChangeNotifier {
 
   DocumentReference get tradReviewRef => _tradReviewRef;
 
-  set tradReviewRef(DocumentReference value) {
-    _tradReviewRef = value;
-    update();
+  void setTradReviewRef(DocumentReference tradReviewRef, bool refresh) {
+    _tradReviewRef = tradReviewRef;
+    if (refresh)
+      update();
   }
 
   Future<void> update() async {
+    log('Pushing Session instance update to remote');
     await docRef.set(map);
     notifyListeners();
   }
@@ -113,7 +119,7 @@ class Session extends ChangeNotifier {
   }
 }
 
-enum SessionState { waiting, tutorial, trad, review }
+enum SessionState { waiting, tutorial, trad, review, search }
 
 extension StateExtension on SessionState {
   String get route {
@@ -126,6 +132,8 @@ extension StateExtension on SessionState {
         return '/tradition';
       case SessionState.review:
         return '/review';
+      case SessionState.search:
+        return '/search';
       default:
         return '/';
     }

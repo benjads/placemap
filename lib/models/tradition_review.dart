@@ -6,6 +6,7 @@ class TraditionReview {
   final DocumentReference sessionRef;
   final DocumentReference tradRef;
   final Map<String, int> _ratings;
+  String nextKeyword;
   final DocumentReference docRef;
 
   TraditionReview(this.sessionRef, this.tradRef)
@@ -19,12 +20,11 @@ class TraditionReview {
       : assert(map['tradRef'] != null),
         sessionRef = docRef.parent.parent,
         tradRef = map['tradRef'],
-        _ratings = PlacemapUtils.toStringIntMap(map['ratings']);
+        _ratings = PlacemapUtils.toStringIntMap(map['ratings']),
+        nextKeyword = map['nextKeyword'];
 
-  Map<String, dynamic> get map => {
-        'tradRef': tradRef,
-        'ratings': _ratings,
-      };
+  Map<String, dynamic> get map =>
+      {'tradRef': tradRef, 'ratings': _ratings, 'nextKeyword': nextKeyword};
 
   Future<void> update() async {
     await docRef.set(map);
@@ -62,6 +62,7 @@ class TraditionReview {
   static Future<List<TraditionReview>> allReviews(Session session) async {
     final reviews = await session.docRef.collection('reviews').get();
     return reviews.docs
-        .map((snapshot) => TraditionReview.fromSnapshot(snapshot)).toList();
+        .map((snapshot) => TraditionReview.fromSnapshot(snapshot))
+        .toList();
   }
 }

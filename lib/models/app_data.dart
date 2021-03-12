@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
@@ -12,10 +13,12 @@ class AppData extends ChangeNotifier {
   String _sessionId;
   Session _session;
   bool dirtyScreen = false;
+  bool routeChange = false;
   StreamSubscription _sessionSub;
   bool _host = false;
   Tradition _tradition;
   TraditionReview _review;
+  bool cachedAssets = false;
 
   Session get session => _session;
   String get sessionId => _sessionId;
@@ -72,9 +75,9 @@ class AppData extends ChangeNotifier {
           .doc(sessionId)
           .snapshots()
           .listen((doc) async {
+        log('An updated Placemap session was received by the remote');
         final newSession = Session.fromSnapshot(doc);
-
-        if (newSession.state != _session.state) dirtyScreen = true;
+        final oldState = _session.state;
 
         _session = newSession;
 
@@ -86,6 +89,11 @@ class AppData extends ChangeNotifier {
             final tradReviewSnapshot = await _session.tradReviewRef.get();
             _review = TraditionReview.fromSnapshot(tradReviewSnapshot);
           }
+        }
+
+        if (_session.state != oldState || routeChange) {
+          dirtyScreen = true;
+          routeChange = false;
         }
 
         notifyListeners();
@@ -103,11 +111,17 @@ class AppData extends ChangeNotifier {
     }
 
     _review = TraditionReview(_session.docRef, _tradition.docRef);
+    _review.nextKeyword = Tradition.randomKeyword(_tradition);
     await _review.update();
-    _session.tradReviewRef = _review.docRef;
+    _session.setTradReviewRef(_review.docRef, false);
     await _session.update();
     notifyListeners();
 
     return _review;
+  }
+
+  void clearReview() {
+    _review = null;
+    _session.setTradReviewRef(null, false);
   }
 }

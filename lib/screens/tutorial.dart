@@ -82,9 +82,8 @@ class FinishButton extends StatelessWidget {
           return PlacemapButton(
               onPressed: () async {
                 appData.session.tradRef =
-                    (await Tradition.random(context)).docRef;
-                appData.dirtyScreen = true;
-                appData.session.state = SessionState.trad;
+                    (await Tradition.random(appData)).docRef;
+                appData.session.setState(SessionState.trad, true);
               },
               text: "Let's Go!");
         } else {

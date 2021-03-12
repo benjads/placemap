@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:provider/provider.dart';
 
@@ -114,13 +115,13 @@ class StrokeText extends StatelessWidget {
   final double strokeWidth;
 
   const StrokeText(
-      this.text, {
-        Key key,
-        @required this.style,
-        @required this.color,
-        @required this.strokeColor,
-        @required this.strokeWidth,
-      }) : super(key: key);
+    this.text, {
+    Key key,
+    @required this.style,
+    @required this.color,
+    @required this.strokeColor,
+    @required this.strokeWidth,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -148,6 +149,18 @@ class StrokeText extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class LogoText extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return Text(
+      'PlaceMap',
+      style: GoogleFonts.nanumBrushScript(textStyle: theme.textTheme.headline3),
     );
   }
 }

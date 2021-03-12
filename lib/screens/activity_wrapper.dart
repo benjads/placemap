@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/session.dart';
@@ -16,7 +18,10 @@ class ActivityWrapper extends StatelessWidget {
       builder: (context, appData, child) {
         if (appData.dirtyScreen) {
           appData.dirtyScreen = false;
-         Future.microtask(() =>  Navigator.popAndPushNamed(context, appData.session.state.route));
+         Future.microtask(() {
+           log('Resolving dirty screen; new state is: ${appData.session.state}');
+           Navigator.popAndPushNamed(context, appData.session.state.route);
+         });
         }
 
         return Stack(

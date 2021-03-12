@@ -24,7 +24,7 @@ class _TraditionViewState extends State<TraditionView> {
     final SpeechService speechService = context.read<SpeechService>();
     final AppData appData = context.read<AppData>();
     final Preferences prefs = context.read<Preferences>();
-    appData.tradition.cacheImages(context).whenComplete(() {
+    appData.tradition.cacheImages(context, true).whenComplete(() {
       setState(() {
         _cached = true;
       });
@@ -116,11 +116,25 @@ class _TraditionContentState extends State<TraditionContent> {
     });
   }
 
-  void _review() {
+  void _stop() async {
+    final SpeechService speechService = context.read<SpeechService>();
+    speechService.stop();
+  }
+
+  void _review() async {
+    _stop();
     final AppData appData = context.read<AppData>();
-    appData.createReview();
-    appData.session.state = SessionState.review;
+    await appData.createReview();
+    appData.session.setState(SessionState.review, true);
     Navigator.popAndPushNamed(context, '/review');
+  }
+
+  void _search() async {
+    _stop();
+    final AppData appData = context.read<AppData>();
+    await appData.createReview();
+    appData.routeChange = true;
+    appData.session.setState(SessionState.search, true);
   }
 
   @override
@@ -131,7 +145,7 @@ class _TraditionContentState extends State<TraditionContent> {
       case TraditionState.extended:
         return TraditionExtended(_end);
       case TraditionState.post:
-        return TraditionPost(_review);
+        return TraditionPost(_review, _search);
       default:
         return Container(child: null);
     }
@@ -333,8 +347,9 @@ class _TraditionMediaState extends State<TraditionMedia> {
 
 class TraditionPost extends StatelessWidget {
   final VoidCallback review;
+  final VoidCallback search;
 
-  TraditionPost(this.review);
+  TraditionPost(this.review, this.search);
 
   @override
   Widget build(BuildContext context) {
@@ -381,7 +396,7 @@ class TraditionPost extends StatelessWidget {
                 style: theme.textTheme.bodyText1,
               ),
               SizedBox(height: 10),
-              PlacemapButton(onPressed: () {}, text: 'SEARCH AGAIN'),
+              PlacemapButton(onPressed: search, text: 'SEARCH AGAIN'),
               SizedBox(height: 10),
               Text(
                 'PRESS THIS BUTTON TO FIND SIMILAR TRADITIONS, YOU CAN ALSO',
