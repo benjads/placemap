@@ -39,15 +39,10 @@ class IntroScreen extends StatelessWidget {
         child: Stack(
           alignment: Alignment.topCenter,
           children: [
-            Positioned.fill(
-              child: Column(
-                children: [if (showTitle) _title(), content],
-              ),
-            ),
             footer == null
                 ? Positioned(
                     height: 450,
-                    bottom: -300,
+                    bottom: -200,
                     child: Image(
                       image: AssetImage('graphics/globe.png'),
                     ),
@@ -55,7 +50,12 @@ class IntroScreen extends StatelessWidget {
                 : Positioned(
                     bottom: 0,
                     child: footer,
-                  )
+                  ),
+            Positioned.fill(
+              child: Column(
+                children: [if (showTitle) _title(), content],
+              ),
+            ),
           ],
         ),
       ),

@@ -30,8 +30,8 @@ class Tradition {
       @required this.videoUri,
       @required this.photos,
       @required this.keywords,
-      @required this.allowedFirst})
-      : docRef = null;
+      @required this.allowedFirst,
+      @required this.docRef});
 
   Tradition.fromSnapshot(DocumentSnapshot doc)
       : this.fromMap(doc.data(), docRef: doc.reference);
@@ -40,7 +40,6 @@ class Tradition {
       : assert(map['name'] != null),
         assert(map['origin'] != null),
         assert(map['coverImg'] != null),
-        assert(map['ttsDesc'] != null),
         assert(map['fullDesc'] != null),
         assert(map['keywords'] != null),
         assert(map['allowedFirst'] != null),
@@ -79,6 +78,12 @@ class Tradition {
   Image get cachedCoverImg => _cachedCoverImg;
 
   List<Image> get cachedPhotos => _cachedPhotos;
+
+  @override
+  bool operator ==(Object other) => other is Tradition && docRef.id == other.docRef.id;
+
+  @override
+  int get hashCode => docRef.id.hashCode;
 
   static Future<List<Tradition>> allTraditions() async {
     final traditionsSnapshot =
@@ -124,6 +129,8 @@ class Tradition {
     reviews.forEach((review) => traditions.remove(
         traditions.where((tradition) => tradition.docRef == review.tradRef)));
 
+    traditions.remove(traditions.firstWhere((tradition) => tradition == appData.tradition, orElse: () => null));
+
     final seed = appData.session.participantCount * reviews.length;
     final rng = Random(seed);
 
@@ -143,4 +150,5 @@ class Tradition {
     final Random rng = Random();
     return tradition.keywords[rng.nextInt(tradition.keywords.length)];
   }
+
 }

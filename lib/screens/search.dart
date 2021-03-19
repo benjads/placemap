@@ -1,5 +1,6 @@
 import 'dart:developer';
 
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/models/tradition.dart';
@@ -137,8 +138,9 @@ class _SearchResultState extends State<SearchResult> {
                       padding: EdgeInsets.all(6),
                       child: Text(
                         widget.tradition.name.toUpperCase(),
-                        style:
-                            theme.textTheme.headline4.copyWith(color: Colors.white),
+                        style: theme.textTheme.headline4
+                            .copyWith(color: Colors.white),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),
@@ -150,8 +152,9 @@ class _SearchResultState extends State<SearchResult> {
                       padding: EdgeInsets.all(6),
                       child: Text(
                         '(${widget.tradition.origin})',
-                        style:
-                            theme.textTheme.headline6.copyWith(color: Colors.white),
+                        style: theme.textTheme.headline6
+                            .copyWith(color: Colors.white),
+                        textAlign: TextAlign.center,
                       ),
                     ),
                   ),

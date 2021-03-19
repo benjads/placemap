@@ -29,7 +29,8 @@ class _TraditionViewState extends State<TraditionView> {
         _cached = true;
       });
 
-      if (prefs.sound) speechService.speak(appData.tradition.ttsDesc);
+      if (prefs.sound && appData.tradition.ttsDesc != null)
+        speechService.speak(appData.tradition.ttsDesc);
     });
   }
 
@@ -72,9 +73,10 @@ class _TtsButtonState extends State<TtsButton> {
         speechService.stop();
         prefs.sound = false;
       } else {
-        prefs.sound
-            ? speechService.speak(appData.tradition.ttsDesc)
-            : prefs.sound = true;
+        if (prefs.sound) if (appData.tradition.ttsDesc != null)
+          speechService.speak(appData.tradition.ttsDesc);
+        else
+          prefs.sound = true;
       }
     });
   }
@@ -336,9 +338,11 @@ class _TraditionMediaState extends State<TraditionMedia> {
 
     return CarouselSlider(
       options: CarouselOptions(
+          enableInfiniteScroll: items.length != 1,
           height: 200,
           onPageChanged: (idx, _) {
-            if (_ytController.value.isPlaying) _ytController.pause();
+            if (_ytController != null && _ytController.value.isPlaying)
+              _ytController.pause();
           }),
       items: _generateMedia(appData.tradition),
     );

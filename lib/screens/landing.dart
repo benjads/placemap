@@ -31,9 +31,9 @@ class LandingScreen extends StatelessWidget {
     if (appData.cachedAssets)
       return;
 
-    Future.microtask(() {
-      precacheImage(Image.asset('graphics/globe_placeholder.png').image, context);
-      appData.cachedAssets = true;
-    });
+    // Future.microtask(() {
+    //   precacheImage(Image.asset('graphics/globe_placeholder.png').image, context);
+    //   appData.cachedAssets = true;
+    // });
   }
 }
