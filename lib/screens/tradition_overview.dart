@@ -118,25 +118,23 @@ class _TraditionContentState extends State<TraditionContent> {
     });
   }
 
-  void _stop() async {
-    final SpeechService speechService = context.read<SpeechService>();
-    speechService.stop();
-  }
-
-  void _review() async {
-    _stop();
-    final AppData appData = context.read<AppData>();
-    await appData.createReview();
-    appData.session.setState(SessionState.review, true);
-    Navigator.popAndPushNamed(context, '/review');
-  }
-
-  void _search() async {
-    _stop();
+  void _navigate(SessionState newState) async {
     final AppData appData = context.read<AppData>();
     await appData.createReview();
     appData.routeChange = true;
-    appData.session.setState(SessionState.search, true);
+    appData.session.setState(newState, true);
+  }
+
+  void _review() async {
+    _navigate(SessionState.review);
+  }
+
+  void _search() async {
+    _navigate(SessionState.search);
+  }
+
+  void _pause() {
+    _navigate(SessionState.pause);
   }
 
   @override
@@ -147,7 +145,7 @@ class _TraditionContentState extends State<TraditionContent> {
       case TraditionState.extended:
         return TraditionExtended(_end);
       case TraditionState.post:
-        return TraditionPost(_review, _search);
+        return TraditionPost(_review, _search, _pause);
       default:
         return Container(child: null);
     }
@@ -352,8 +350,9 @@ class _TraditionMediaState extends State<TraditionMedia> {
 class TraditionPost extends StatelessWidget {
   final VoidCallback review;
   final VoidCallback search;
+  final VoidCallback pause;
 
-  TraditionPost(this.review, this.search);
+  TraditionPost(this.review, this.search, this.pause);
 
   @override
   Widget build(BuildContext context) {
@@ -408,7 +407,7 @@ class TraditionPost extends StatelessWidget {
                 textAlign: TextAlign.center,
               ),
               SizedBox(height: 10),
-              PlacemapButton(onPressed: () {}, text: 'TAKE A BREAK'),
+              PlacemapButton(onPressed: pause, text: 'TAKE A BREAK'),
               SizedBox(height: 10),
               Text(
                 'AND DO ANOTHER SEARCH LATER',

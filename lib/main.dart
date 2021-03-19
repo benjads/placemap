@@ -4,8 +4,10 @@ import 'package:flutter/services.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/preferences.dart';
 import 'package:placemap/screens/about.dart';
+import 'package:placemap/screens/exit.dart';
 import 'package:placemap/screens/join.dart';
 import 'package:placemap/screens/landing.dart';
+import 'package:placemap/screens/pause.dart';
 import 'package:placemap/screens/review.dart';
 import 'package:placemap/screens/search.dart';
 import 'package:placemap/screens/tradition_overview.dart';
@@ -74,6 +76,10 @@ class PlacemapApp extends StatelessWidget {
                         return ReviewScreen();
                       case '/search':
                         return SearchScreen();
+                      case '/pause':
+                        return PauseScreen();
+                      case '/exit':
+                        return ExitScreen();
                     }
 
                     return null;

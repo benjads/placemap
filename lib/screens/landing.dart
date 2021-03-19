@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/screens/common.dart';
 import 'package:placemap/screens/intro.dart';
@@ -31,9 +32,9 @@ class LandingScreen extends StatelessWidget {
     if (appData.cachedAssets)
       return;
 
-    // Future.microtask(() {
-    //   precacheImage(Image.asset('graphics/globe_placeholder.png').image, context);
-    //   appData.cachedAssets = true;
-    // });
+    Future.microtask(() {
+      GoogleFonts.nanumBrushScript();
+      appData.cachedAssets = true;
+    });
   }
 }

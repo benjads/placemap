@@ -33,7 +33,7 @@ class PlacemapButton extends StatelessWidget {
 class DividerText extends StatelessWidget {
   final String text;
 
-  DividerText({Key key, @required this.text}) : super(key: key);
+  DividerText({Key key, this.text}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -50,14 +50,15 @@ class DividerText extends StatelessWidget {
               color: theme.colorScheme.onPrimary,
             ),
           ),
-          Flexible(
-              child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 10),
-            child: Text(
-              text,
-              style: theme.textTheme.bodyText1,
-            ),
-          )),
+          if (text != null)
+            Flexible(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    text,
+                    style: theme.textTheme.bodyText1,
+                  ),
+                )),
           Flexible(
             child: Divider(
               thickness: 2,

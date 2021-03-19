@@ -88,6 +88,8 @@ class AppData extends ChangeNotifier {
           if (_session.tradReviewRef != null) {
             final tradReviewSnapshot = await _session.tradReviewRef.get();
             _review = TraditionReview.fromSnapshot(tradReviewSnapshot);
+          } else {
+            clearReview();
           }
         }
 

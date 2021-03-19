@@ -74,7 +74,15 @@ class Session extends ChangeNotifier {
     final String deviceId = await PlacemapUtils.currentDeviceId();
     _participants
         .firstWhere((participant) => participant.deviceId == deviceId)
-        .tutorialComplete = true;
+        .tutorialComplete = complete;
+    update();
+  }
+
+  Future<void> setSelfQuit(bool quit) async {
+    final String deviceId = await PlacemapUtils.currentDeviceId();
+    _participants
+        .firstWhere((participant) => participant.deviceId == deviceId)
+        .quit = quit;
     update();
   }
 
@@ -82,6 +90,13 @@ class Session extends ChangeNotifier {
     return _participants.firstWhere(
             (participant) => !participant.tutorialComplete,
             orElse: () => null) ==
+        null;
+  }
+
+  bool allQuit() {
+    return _participants.firstWhere(
+            (participant) => !participant.quit,
+        orElse: () => null) ==
         null;
   }
 
@@ -119,7 +134,7 @@ class Session extends ChangeNotifier {
   }
 }
 
-enum SessionState { waiting, tutorial, trad, review, search }
+enum SessionState { waiting, tutorial, trad, review, search, pause, ended }
 
 extension StateExtension on SessionState {
   String get route {
@@ -134,6 +149,8 @@ extension StateExtension on SessionState {
         return '/review';
       case SessionState.search:
         return '/search';
+      case SessionState.pause:
+        return '/pause';
       default:
         return '/';
     }
