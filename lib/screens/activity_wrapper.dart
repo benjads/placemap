@@ -33,19 +33,19 @@ class ActivityWrapper extends StatelessWidget {
           children: [
             Positioned.fill(child: child),
             Positioned(
-              top: 80,
-              left: 20,
+              top: 20,
+              left: 10,
               child: Material(
                 shape: CircleBorder(),
                 color: theme.colorScheme.primaryVariant,
                 child: Container(
-                  height: 60.0,
-                  width: 60.0,
+                  height: 50.0,
+                  width: 50.0,
                   child: Center(
                     child: Text(
                       appData.session.participantCount.toString(),
                       style: theme.textTheme.headline4
-                          .copyWith(color: Colors.white),
+                          .copyWith(color: Colors.white, height: 1.5),
                       textAlign: TextAlign.center,
                     ),
                   ),

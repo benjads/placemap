@@ -49,7 +49,7 @@ class _TraditionViewState extends State<TraditionView> {
         child: Stack(
           children: [
             Positioned.fill(child: TraditionContent()),
-            Positioned(top: 80, right: 40, child: TtsButton()),
+            Positioned(top: 20, right: 10, child: TtsButton()),
           ],
         ),
       ),
@@ -244,7 +244,7 @@ class TraditionExtended extends StatelessWidget {
                 width: 240,
                 child: Text(
                   appData.tradition.name,
-                  style: theme.textTheme.headline3.copyWith(
+                  style: theme.textTheme.headline4.copyWith(
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
@@ -360,7 +360,7 @@ class TraditionPost extends StatelessWidget {
     final AppData appData = context.read<AppData>();
 
     return Container(
-        padding: EdgeInsets.only(top: 80),
+        padding: EdgeInsets.only(top: 50),
         decoration: BoxDecoration(
           image: DecorationImage(
             image: appData.tradition.cachedCoverImg.image,
@@ -378,7 +378,7 @@ class TraditionPost extends StatelessWidget {
           ),
         ),
         child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: 40),
+          padding: EdgeInsets.symmetric(horizontal: 30),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -390,10 +390,10 @@ class TraditionPost extends StatelessWidget {
               SizedBox(height: 20),
               Text(
                 'TRY IT OUT!',
-                style: theme.textTheme.headline2
+                style: theme.textTheme.headline3
                     .copyWith(fontWeight: FontWeight.bold),
               ),
-              SizedBox(height: 40),
+              SizedBox(height: 30),
               Text(
                 'WHEN YOU FEEL YOU WANT TO',
                 style: theme.textTheme.bodyText1,
@@ -413,7 +413,7 @@ class TraditionPost extends StatelessWidget {
                 'AND DO ANOTHER SEARCH LATER',
                 style: theme.textTheme.bodyText1,
               ),
-              SizedBox(height: 40),
+              SizedBox(height: 30),
               Text(
                 'IF YOU WANT YOU CAN ALSO',
                 style: theme.textTheme.bodyText1,

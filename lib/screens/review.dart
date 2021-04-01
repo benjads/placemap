@@ -48,19 +48,19 @@ class ReviewSelectView extends StatelessWidget {
     final AppData appData = context.read<AppData>();
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(40, 40, 40, 0),
+      padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           LogoText(),
-          SizedBox(height: 30),
+          SizedBox(height: 10),
           Text(
             "CHOOSE A FACE THAT DESCRIBES HOW MUCH YOU "
             "LIKED \"${appData.tradition.name.toUpperCase()}\"",
             style: theme.textTheme.headline6,
             textAlign: TextAlign.center,
           ),
-          SizedBox(height: 30),
+          SizedBox(height: 20),
           FaceSelect('😍', 5, null, submitVote),
           FaceSelect('😀', 4, null, submitVote),
           FaceSelect('🙄', 3, null, submitVote),
@@ -85,7 +85,7 @@ class ReviewResultsView extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(40, 40, 40, 0),
+      padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -94,7 +94,7 @@ class ReviewResultsView extends StatelessWidget {
             style: GoogleFonts.nanumBrushScript(
                 textStyle: theme.textTheme.headline3),
           ),
-          SizedBox(height: 30),
+          SizedBox(height: 20),
           Text(
             "HERE'S HOW THE REST OF THE GROUP LIKED IT. "
                 "DO YOU AGREE?",
@@ -103,7 +103,7 @@ class ReviewResultsView extends StatelessWidget {
           ),
           SizedBox(height: 10),
           PlacemapButton(onPressed: () => _search(context), text: 'BACK TO SEARCH'),
-          SizedBox(height: 30),
+          SizedBox(height: 20),
           ReviewResultsInner(),
         ],
       ),
@@ -177,34 +177,32 @@ class FaceSelect extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Padding(
-        padding: EdgeInsets.symmetric(vertical: 10),
-        child: GestureDetector(
-          onTap: () async {
-            if (submit == null) return;
+    return GestureDetector(
+      onTap: () async {
+        if (submit == null) return;
 
-            final AppData appData = context.read<AppData>();
-            await appData.review.addReview(rating);
-            submit();
-          },
-          child: Stack(
-            children: [
-              Text(
-                emoji,
-                style: TextStyle(fontSize: 60),
-              ),
-              if (count != null)
-                Positioned(
-                  top: 0,
-                  right: 0,
-                  child: Text(
-                    count.toString(),
-                    style: theme.textTheme.bodyText1,
-                  ),
-                )
-            ],
+        final AppData appData = context.read<AppData>();
+        await appData.review.addReview(rating);
+        submit();
+      },
+      child: Stack(
+        children: [
+          Text(
+            emoji,
+            style: TextStyle(fontSize: 50),
           ),
-        ));
+          if (count != null)
+            Positioned(
+              top: 0,
+              right: 0,
+              child: Text(
+                count.toString(),
+                style: theme.textTheme.bodyText1,
+              ),
+            )
+        ],
+      ),
+    );
   }
 }
 
@@ -218,7 +216,7 @@ class RatingBar extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 30),
       child: Container(
-        height: 450,
+        height: 320,
         child: Column(
           mainAxisSize: MainAxisSize.max,
           mainAxisAlignment: MainAxisAlignment.end,
@@ -230,7 +228,7 @@ class RatingBar extends StatelessWidget {
             ),
             AnimatedContainer(
               duration: Duration(seconds: 2),
-              height: (avgRating / 5) * 400,
+              height: (avgRating / 5) * 300,
               width: 150,
               decoration: BoxDecoration(
                   gradient: LinearGradient(

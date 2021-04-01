@@ -11,7 +11,8 @@ import 'package:placemap/screens/intro.dart';
 import 'package:provider/provider.dart';
 
 class ExitScreen extends StatelessWidget {
-  static const exitMsg = 'This is a group experience, so all the party should be OK with ending it. Let’s wait for everyone to decide.';
+  static const exitMsg = 'This is a group experience, so all the party should be OK with ending it. '
+      'Let’s wait for everyone to decide.';
 
   @override
   Widget build(BuildContext context) {
@@ -21,29 +22,26 @@ class ExitScreen extends StatelessWidget {
       child: IntroScreen(
         showTitle: false,
         footer: null,
-        content: Padding(
-          padding: const EdgeInsets.only(top: 40),
-          child: Column(
-            children: [
-              Text(
-                'PlaceMap',
-                style: GoogleFonts.nanumBrushScript(
-                    textStyle: theme.textTheme.headline3),
+        content: Column(
+          children: [
+            Text(
+              'PlaceMap',
+              style: GoogleFonts.nanumBrushScript(
+                  textStyle: theme.textTheme.headline3),
+            ),
+            SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Text(
+                exitMsg,
+                style: theme.textTheme.headline5,
+                textAlign: TextAlign.center,
               ),
-              SizedBox(height: 120),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Text(
-                  exitMsg,
-                  style: theme.textTheme.headline5,
-                  textAlign: TextAlign.center,
-                ),
-              ),
-              SizedBox(height: 30),
-              ReturnButton(),
-              ExitButton()
-            ],
-          ),
+            ),
+            SizedBox(height: 30),
+            ReturnButton(),
+            ExitButton()
+          ],
         ),
       ),
     );

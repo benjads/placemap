@@ -21,16 +21,16 @@ class SearchScreen extends StatelessWidget {
         showTitle: false,
         footer: SizedBox.shrink(),
         content: Padding(
-          padding: EdgeInsets.fromLTRB(20, 40, 20, 0),
+          padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               LogoText(),
-              SizedBox(height: 30),
+              SizedBox(height: 20),
               if (appData.review != null)
                 Text(
                   'Results for "${appData.review.nextKeyword}"',
-                  style: theme.textTheme.headline4,
+                  style: theme.textTheme.headline5,
                   textAlign: TextAlign.center,
                 ),
               SearchScreenInner(),
@@ -113,7 +113,7 @@ class _SearchResultState extends State<SearchResult> {
       child: GestureDetector(
         onTap: _select,
         child: SizedBox(
-          height: 160,
+          height: 120,
           child: AnimatedOpacity(
             opacity: _cached ? 1 : 0,
             duration: Duration(seconds: 2),
@@ -138,7 +138,7 @@ class _SearchResultState extends State<SearchResult> {
                       padding: EdgeInsets.all(6),
                       child: Text(
                         widget.tradition.name.toUpperCase(),
-                        style: theme.textTheme.headline4
+                        style: theme.textTheme.headline5
                             .copyWith(color: Colors.white),
                         textAlign: TextAlign.center,
                       ),

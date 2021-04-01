@@ -10,7 +10,7 @@ class IntroScreen extends StatelessWidget {
       : super(key: key);
 
   Widget _title() => Container(
-        padding: EdgeInsets.fromLTRB(0, 40, 0, 100),
+        padding: EdgeInsets.fromLTRB(0, 40, 0, 60),
         child: SizedBox(
           height: 80,
           child: Image(
@@ -26,7 +26,7 @@ class IntroScreen extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomPadding: false,
       body: Container(
-        padding: EdgeInsets.only(top: 40),
+        padding: EdgeInsets.only(top: 20),
         decoration: BoxDecoration(
             gradient: LinearGradient(
           begin: Alignment.topCenter,

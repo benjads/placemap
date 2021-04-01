@@ -12,7 +12,7 @@ class JoinScreen extends StatelessWidget {
       showTitle: false,
       footer: null,
       content: Padding(
-        padding: EdgeInsets.only(top: 40),
+        padding: EdgeInsets.only(top: 20),
         child: Column(
           children: [
             CreateSection(),
@@ -54,10 +54,10 @@ class CreateSection extends StatelessWidget {
             ),
             SizedBox(height: 20),
             ParticipantBubbles(),
-            SizedBox(height: 20),
+            SizedBox(height: 10),
             Text(
               'AND PRESS',
-              style: theme.textTheme.headline4,
+              style: theme.textTheme.headline5,
             ),
             SizedBox(height: 10),
             PlacemapButton(

@@ -19,7 +19,7 @@ class PauseScreen extends StatelessWidget {
         showTitle: false,
         footer: null,
         content: Padding(
-          padding: const EdgeInsets.only(top: 40),
+          padding: const EdgeInsets.only(top: 10),
           child: Column(
             children: [
               Text(
@@ -27,7 +27,7 @@ class PauseScreen extends StatelessWidget {
                 style: GoogleFonts.nanumBrushScript(
                     textStyle: theme.textTheme.headline3),
               ),
-              SizedBox(height: 120),
+              SizedBox(height: 60),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Text(
