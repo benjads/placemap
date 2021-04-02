@@ -35,12 +35,9 @@ class TutorialScreen extends StatelessWidget {
         child: IntroScreen(
           showTitle: false,
           content: Padding(
-            padding: const EdgeInsets.only(
-              top: 120,
-              left: 50,
-              right: 50,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 50),
             child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
                   finalDesc,
@@ -109,11 +106,7 @@ class Tutorial1 extends StatelessWidget {
       next: '/tutorial/2',
       nextText: "Let's Try",
       child: Padding(
-        padding: const EdgeInsets.only(
-          top: 120,
-          left: 50,
-          right: 50,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 50),
         child: Text(
           desc,
           style: theme.textTheme.headline5,
@@ -135,11 +128,7 @@ class Tutorial2 extends StatelessWidget {
       next: '/tutorial/end',
       nextText: "Got It",
       child: Padding(
-        padding: const EdgeInsets.only(
-          top: 120,
-          left: 50,
-          right: 50,
-        ),
+        padding: const EdgeInsets.symmetric(horizontal: 50),
         child: Text(
           desc,
           style: theme.textTheme.headline5,

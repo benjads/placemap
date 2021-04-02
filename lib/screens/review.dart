@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/models/tradition_review.dart';
@@ -30,6 +29,7 @@ class _ReviewScreenState extends State<ReviewScreen> {
     return ActivityWrapper(
       child: IntroScreen(
         showTitle: false,
+        simpleLogo: true,
         footer: SizedBox.shrink(),
         content: _results ? ReviewResultsView() : ReviewSelectView(submitVote),
       ),
@@ -52,8 +52,6 @@ class ReviewSelectView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          LogoText(),
-          SizedBox(height: 10),
           Text(
             "CHOOSE A FACE THAT DESCRIBES HOW MUCH YOU "
             "LIKED \"${appData.tradition.name.toUpperCase()}\"",
@@ -89,12 +87,6 @@ class ReviewResultsView extends StatelessWidget {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Text(
-            'PlaceMap',
-            style: GoogleFonts.nanumBrushScript(
-                textStyle: theme.textTheme.headline3),
-          ),
-          SizedBox(height: 20),
           Text(
             "HERE'S HOW THE REST OF THE GROUP LIKED IT. "
                 "DO YOU AGREE?",

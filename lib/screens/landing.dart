@@ -15,6 +15,7 @@ class LandingScreen extends StatelessWidget {
       showTitle: true,
       footer: null,
       content: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           PlacemapButton(
               onPressed: () => Navigator.pushNamed(context, '/join'),

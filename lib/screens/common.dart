@@ -153,15 +153,3 @@ class StrokeText extends StatelessWidget {
     );
   }
 }
-
-class LogoText extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
-    return Text(
-      'PlaceMap',
-      style: GoogleFonts.nanumBrushScript(textStyle: theme.textTheme.headline3),
-    );
-  }
-}

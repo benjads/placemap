@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
@@ -21,14 +20,12 @@ class ExitScreen extends StatelessWidget {
     return ActivityWrapper(
       child: IntroScreen(
         showTitle: false,
+        simpleLogo: true,
         footer: null,
+        footerPadding: false,
         content: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              'PlaceMap',
-              style: GoogleFonts.nanumBrushScript(
-                  textStyle: theme.textTheme.headline3),
-            ),
             SizedBox(height: 40),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),

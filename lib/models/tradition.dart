@@ -118,11 +118,6 @@ class Tradition {
   static Future<List<Tradition>> randomList(
       AppData appData, int count, String keyword) async {
     List<Tradition> traditions = await allTraditions();
-    if (keyword != null) {
-      traditions = traditions
-          .where((tradition) => tradition.keywords.contains(keyword))
-          .toList();
-    }
 
     final List<TraditionReview> reviews =
         await TraditionReview.allReviews(appData.session);
@@ -130,6 +125,13 @@ class Tradition {
         traditions.where((tradition) => tradition.docRef == review.tradRef)));
 
     traditions.remove(traditions.firstWhere((tradition) => tradition == appData.tradition, orElse: () => null));
+
+    final List<Tradition> traditionsAlt = List.of(traditions);
+    if (keyword != null) {
+      traditions = traditions
+          .where((tradition) => tradition.keywords.contains(keyword))
+          .toList();
+    }
 
     final seed = appData.session.participantCount * reviews.length;
     final rng = Random(seed);
@@ -141,6 +143,13 @@ class Tradition {
       var tradition = traditions[idx];
       results.add(tradition);
       traditions.remove(tradition);
+    }
+
+    while (results.length < count && traditionsAlt.isNotEmpty) {
+      var idx = rng.nextInt(traditionsAlt.length);
+      var tradition = traditionsAlt[idx];
+      results.add(tradition);
+      traditionsAlt.remove(tradition);
     }
 
     return results;

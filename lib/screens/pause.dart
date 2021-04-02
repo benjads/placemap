@@ -17,17 +17,13 @@ class PauseScreen extends StatelessWidget {
     return ActivityWrapper(
       child: IntroScreen(
         showTitle: false,
+        simpleLogo: true,
         footer: null,
         content: Padding(
           padding: const EdgeInsets.only(top: 10),
           child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                'PlaceMap',
-                style: GoogleFonts.nanumBrushScript(
-                    textStyle: theme.textTheme.headline3),
-              ),
-              SizedBox(height: 60),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Text(

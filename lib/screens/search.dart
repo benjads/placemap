@@ -4,7 +4,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/models/tradition.dart';
-import 'package:placemap/screens/common.dart';
 import 'package:provider/provider.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
@@ -19,14 +18,13 @@ class SearchScreen extends StatelessWidget {
     return ActivityWrapper(
       child: IntroScreen(
         showTitle: false,
+        simpleLogo: true,
         footer: SizedBox.shrink(),
         content: Padding(
           padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              LogoText(),
-              SizedBox(height: 20),
               if (appData.review != null)
                 Text(
                   'Results for "${appData.review.nextKeyword}"',

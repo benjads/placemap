@@ -11,9 +11,11 @@ class JoinScreen extends StatelessWidget {
     return IntroScreen(
       showTitle: false,
       footer: null,
+      footerPadding: false,
       content: Padding(
         padding: EdgeInsets.only(top: 20),
         child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             CreateSection(),
             DividerText(text: 'or'),

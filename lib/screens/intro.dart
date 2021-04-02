@@ -1,12 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 class IntroScreen extends StatelessWidget {
   final bool showTitle;
+  final bool simpleLogo;
+  final bool footerPadding;
   final Widget footer;
   final Widget content;
 
   const IntroScreen(
-      {Key key, this.showTitle = true, this.footer, @required this.content})
+      {Key key,
+      this.showTitle = true,
+      this.simpleLogo = false,
+      this.footer,
+      this.footerPadding = true,
+      @required this.content})
       : super(key: key);
 
   Widget _title() => Container(
@@ -31,10 +39,7 @@ class IntroScreen extends StatelessWidget {
             gradient: LinearGradient(
           begin: Alignment.topCenter,
           end: Alignment.bottomCenter,
-          colors: [
-            theme.colorScheme.primary,
-            theme.colorScheme.primaryVariant
-          ],
+          colors: [theme.colorScheme.primary, theme.colorScheme.primaryVariant],
         )),
         child: Stack(
           alignment: Alignment.topCenter,
@@ -52,10 +57,33 @@ class IntroScreen extends StatelessWidget {
                     child: footer,
                   ),
             Positioned.fill(
-              child: Column(
-                children: [if (showTitle) _title(), content],
+              child: Container(
+                padding: EdgeInsets.only(
+                    bottom: footer == null && footerPadding ? 200 : 0,
+                    top: simpleLogo ? 70 : 0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    if (showTitle) _title(),
+                    Expanded(
+                        child: Align(
+                      alignment: Alignment.center,
+                      child: content,
+                    )),
+                  ],
+                ),
               ),
             ),
+            if (simpleLogo)
+              Positioned(
+                top: 20,
+                child: Text(
+                  'PlaceMap',
+                  style: GoogleFonts.nanumBrushScript(
+                      textStyle: theme.textTheme.headline3),
+                ),
+              ),
           ],
         ),
       ),

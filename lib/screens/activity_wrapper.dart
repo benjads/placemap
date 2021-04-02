@@ -33,8 +33,8 @@ class ActivityWrapper extends StatelessWidget {
           children: [
             Positioned.fill(child: child),
             Positioned(
-              top: 20,
-              left: 10,
+              top: 40,
+              left: 20,
               child: Material(
                 shape: CircleBorder(),
                 color: theme.colorScheme.primaryVariant,

@@ -49,7 +49,7 @@ class _TraditionViewState extends State<TraditionView> {
         child: Stack(
           children: [
             Positioned.fill(child: TraditionContent()),
-            Positioned(top: 20, right: 10, child: TtsButton()),
+            Positioned(top: 50, right: 30, child: TtsButton()),
           ],
         ),
       ),
@@ -73,9 +73,11 @@ class _TtsButtonState extends State<TtsButton> {
         speechService.stop();
         prefs.sound = false;
       } else {
-        if (prefs.sound) if (appData.tradition.ttsDesc != null)
-          speechService.speak(appData.tradition.ttsDesc);
-        else
+        if (prefs.sound) {
+          if (appData.tradition.ttsDesc != null) {
+            speechService.speak(appData.tradition.ttsDesc);
+          }
+        } else
           prefs.sound = true;
       }
     });
