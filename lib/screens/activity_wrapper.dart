@@ -1,4 +1,5 @@
 import 'dart:developer';
+import 'dart:io';
 import 'dart:math' show Random;
 
 import 'package:flutter/material.dart';
@@ -47,6 +48,7 @@ class _ActivityWrapperState extends State<ActivityWrapper>
         appData.session.setSelfDistracted(true);
       } else if (state == AppLifecycleState.resumed) {
         appData.session.setSelfDistracted(false);
+        appData.session.setSelCamera(false);
         appData.session.recallMsg = null;
         PlacemapUtils.cancelNotification();
       }
@@ -84,8 +86,8 @@ class _ActivityWrapperState extends State<ActivityWrapper>
                       shape: CircleBorder(),
                       color: theme.colorScheme.primaryVariant,
                       child: Container(
-                        height: 50.0,
-                        width: 50.0,
+                        height: 50,
+                        width: 50,
                         child: Center(
                           child: Text(
                             appData.session.participantCount.toString(),
@@ -96,7 +98,32 @@ class _ActivityWrapperState extends State<ActivityWrapper>
                         ),
                       ),
                     ),
+                  ),
+            if (Platform.isAndroid)
+              Positioned(
+                  bottom: 60,
+                  right: 20,
+                  child: GestureDetector(
+                    onTap: () {
+                      appData.session.setSelCamera(true);
+                      PlacemapUtils.openCamera();
+                    },
+                    child: Material(
+                        shape: CircleBorder(),
+                        color: theme.colorScheme.secondary.withOpacity(0.5),
+                        child: Container(
+                            height: 50,
+                            width: 50,
+                            child: Center(
+                                child: Icon(
+                                    Icons.camera_alt,
+                                    color: Colors.white
+                                )
+                            )
+                        )
+                    ),
                   )
+              )
           ],
         );
       },

@@ -117,7 +117,7 @@ class Session extends ChangeNotifier {
   }
 
   bool defector() {
-    return _participants.firstWhere((participant) => participant.distracted,
+    return _participants.firstWhere((participant) => participant.distracted && !participant.camera,
             orElse: () => null) !=
         null;
   }
