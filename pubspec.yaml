@@ -32,6 +32,8 @@ dependencies:
   youtube_player_flutter: ^7.0.0+7
   google_fonts: ^1.1.2
   carousel_slider: ^3.0.0
+  path_provider: ^1.6.28
+  flutter_local_notifications: ^4.0.1+2
 
 dev_dependencies:
   flutter_test:

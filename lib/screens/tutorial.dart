@@ -58,7 +58,7 @@ class TutorialScreen extends StatelessWidget {
         footer: Padding(
           padding: const EdgeInsets.only(bottom: 20),
           child: PlacemapButton(
-            onPressed: () => Navigator.pushNamed(context, next),
+            onPressed: () => Navigator.popAndPushNamed(context, next),
             text: nextText,
           ),
         ),

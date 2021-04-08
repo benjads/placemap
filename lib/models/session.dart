@@ -10,6 +10,7 @@ class Session extends ChangeNotifier {
   SessionState _state;
   DocumentReference _tradRef;
   DocumentReference _tradReviewRef;
+  String recallMsg;
   final List<Participant> _participants;
   final DocumentReference docRef;
 
@@ -25,6 +26,7 @@ class Session extends ChangeNotifier {
             .firstWhere((state) => (state.toString() == map['state'])),
         _tradRef = map['tradRef'],
         _tradReviewRef = map['tradReviewRef'],
+        recallMsg = map['recallMsg'],
         _participants = (map['participants'] as List<dynamic>)
             .map((participant) =>
                 Participant.fromMap(PlacemapUtils.toMap(participant)))
@@ -35,6 +37,7 @@ class Session extends ChangeNotifier {
         'state': _state.toString(),
         'tradRef': _tradRef ?? null,
         'tradReviewRef': _tradReviewRef ?? null,
+        'recallMsg': recallMsg,
         'participants':
             _participants.map((participant) => participant.map).toList()
       };
@@ -45,16 +48,22 @@ class Session extends ChangeNotifier {
 
   SessionState get state => _state;
 
-
   void setState(SessionState state, bool refresh) {
     _state = state;
-    if (refresh)
-      update();
+    if (refresh) update();
   }
 
   Participant getParticipant(String deviceId) => _participants.firstWhere(
       (participant) => participant.deviceId == deviceId,
       orElse: () => null);
+
+  Future<Participant> getSelf() async {
+    final String deviceId = await PlacemapUtils.currentDeviceId();
+
+    return _participants.firstWhere(
+        (participant) => participant.deviceId == deviceId,
+        orElse: () => null);
+  }
 
   Future<void> addSelf() async {
     final String deviceId = await PlacemapUtils.currentDeviceId();
@@ -71,18 +80,26 @@ class Session extends ChangeNotifier {
   }
 
   Future<void> setSelfTutorial(bool complete) async {
-    final String deviceId = await PlacemapUtils.currentDeviceId();
-    _participants
-        .firstWhere((participant) => participant.deviceId == deviceId)
-        .tutorialComplete = complete;
+    final self = await getSelf();
+    self.tutorialComplete = complete;
     update();
   }
 
   Future<void> setSelfQuit(bool quit) async {
-    final String deviceId = await PlacemapUtils.currentDeviceId();
-    _participants
-        .firstWhere((participant) => participant.deviceId == deviceId)
-        .quit = quit;
+    final self = await getSelf();
+    self.quit = quit;
+    update();
+  }
+
+  Future<void> setSelCamera(bool camera) async {
+    final self = await getSelf();
+    self.camera = camera;
+    update();
+  }
+
+  Future<void> setSelfDistracted(bool distracted) async {
+    final self = await getSelf();
+    self.distracted = distracted;
     update();
   }
 
@@ -94,9 +111,14 @@ class Session extends ChangeNotifier {
   }
 
   bool allQuit() {
-    return _participants.firstWhere(
-            (participant) => !participant.quit,
-        orElse: () => null) ==
+    return _participants.firstWhere((participant) => !participant.quit,
+            orElse: () => null) ==
+        null;
+  }
+
+  bool defector() {
+    return _participants.firstWhere((participant) => participant.distracted,
+            orElse: () => null) !=
         null;
   }
 
@@ -109,13 +131,11 @@ class Session extends ChangeNotifier {
     update();
   }
 
-
   DocumentReference get tradReviewRef => _tradReviewRef;
 
   void setTradReviewRef(DocumentReference tradReviewRef, bool refresh) {
     _tradReviewRef = tradReviewRef;
-    if (refresh)
-      update();
+    if (refresh) update();
   }
 
   Future<void> update() async {

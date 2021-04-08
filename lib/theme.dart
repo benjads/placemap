@@ -4,8 +4,10 @@ final appTheme = ThemeData(
   primaryColor: Color.fromRGBO(0, 113, 188, 1),
   colorScheme: ColorScheme.light(
     primary: Color.fromRGBO(0, 113, 188, 1),
-    primaryVariant: Color.fromRGBO(5, 56, 79, 1.0),
+    primaryVariant: Color.fromRGBO(5, 56, 79, 1),
     onPrimary: Color.fromRGBO(163, 237, 244, 1),
+    error: Color.fromRGBO(163, 19, 10, 1),
+    onError: Color.fromRGBO(193, 39, 45, 1)
 
   ),
   textTheme: TextTheme(

@@ -15,6 +15,7 @@ import 'package:placemap/screens/tutorial.dart';
 import 'package:placemap/screens/wait.dart';
 import 'package:placemap/speech_service.dart';
 import 'package:placemap/theme.dart';
+import 'package:placemap/utils.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -32,6 +33,8 @@ class PlacemapApp extends StatelessWidget {
       DeviceOrientation.portraitDown,
     ]);
 
+    PlacemapUtils.initializeNotifications();
+
     return FutureBuilder(
       future: _initialization,
       builder: (context, snapshot) {
@@ -46,7 +49,7 @@ class PlacemapApp extends StatelessWidget {
             providers: [
               ChangeNotifierProvider<Preferences>(create: (_) => Preferences()),
               ChangeNotifierProvider<AppData>(create: (_) => AppData()),
-              Provider<SpeechService>(create: (_) => SpeechService()),
+              Provider<SpeechService>(create: (_) => SpeechService())
             ],
             child: MaterialApp(
               title: 'Placemap',

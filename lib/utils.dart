@@ -1,10 +1,47 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:http/http.dart' as http;
 
 import 'package:device_info/device_info.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:path_provider/path_provider.dart';
 
 class PlacemapUtils {
   static DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
+
+  static FlutterLocalNotificationsPlugin notifications =
+      FlutterLocalNotificationsPlugin();
+
+  static void initializeNotifications() {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('app_icon');
+    final IOSInitializationSettings initializationSettingsIOS =
+        IOSInitializationSettings();
+    final InitializationSettings initializationSettings =
+        InitializationSettings(
+            android: initializationSettingsAndroid,
+            iOS: initializationSettingsIOS);
+    notifications.initialize(initializationSettings);
+  }
+
+  static Future<void> showNotification(String title, String body) async {
+    const AndroidNotificationDetails androidPlatformChannelSpecifics =
+    AndroidNotificationDetails(
+        'PlaceMap', 'PlaceMap Meal', 'PlaceMap Mealtime Notifications',
+        importance: Importance.max,
+        priority: Priority.high,
+        ticker: 'ticker');
+    const NotificationDetails platformChannelSpecifics =
+    NotificationDetails(android: androidPlatformChannelSpecifics);
+    await notifications.show(
+        0, title, body, platformChannelSpecifics,
+        payload: body);
+  }
+
+  static Future<void> cancelNotification() {
+    return notifications.cancel(0);
+  }
+
 
   static Map<String, dynamic> toMap(Map<dynamic, dynamic> data) {
     return Map<String, dynamic>.from(data);
@@ -17,7 +54,6 @@ class PlacemapUtils {
   static List<String> toStringList(List<dynamic> data) {
     return List<String>.from(data);
   }
-
 
   static Future<String> currentDeviceId() async {
     if (Platform.isAndroid) {

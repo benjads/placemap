@@ -12,10 +12,14 @@ import 'package:placemap/utils.dart';
 class AppData extends ChangeNotifier {
   String _sessionId;
   Session _session;
+  StreamSubscription _sessionSub;
+
+  bool _host = false;
+
   bool dirtyScreen = false;
   bool routeChange = false;
-  StreamSubscription _sessionSub;
-  bool _host = false;
+  bool _recallAck = false;
+
   Tradition _tradition;
   TraditionReview _review;
   bool cachedAssets = false;
@@ -25,6 +29,12 @@ class AppData extends ChangeNotifier {
   bool get host => _host;
   Tradition get tradition => _tradition;
   TraditionReview get review => _review;
+  bool get recallAck => _recallAck;
+
+  set recallAck(bool acknowledged) {
+    _recallAck = acknowledged;
+    notifyListeners();
+  }
 
   Future<Session> getOrCreateSession() async {
     if (_session != null && _host) return _session;
@@ -75,33 +85,46 @@ class AppData extends ChangeNotifier {
           .doc(sessionId)
           .snapshots()
           .listen((doc) async {
-        log('An updated Placemap session was received by the remote');
-        final newSession = Session.fromSnapshot(doc);
-        final oldState = _session.state;
-
-        _session = newSession;
-
-        if (_session.tradRef != null) {
-          final traditionSnapshot = await _session.tradRef.get();
-          _tradition = Tradition.fromSnapshot(traditionSnapshot);
-
-          if (_session.tradReviewRef != null) {
-            final tradReviewSnapshot = await _session.tradReviewRef.get();
-            _review = TraditionReview.fromSnapshot(tradReviewSnapshot);
-          } else {
-            clearReview();
-          }
-        }
-
-        if (_session.state != oldState || routeChange) {
-          dirtyScreen = true;
-          routeChange = false;
-        }
-
-        notifyListeners();
+        await _updateSession(doc);
       });
 
       _host = false;
+    }
+
+    notifyListeners();
+  }
+
+  Future _updateSession(DocumentSnapshot doc) async {
+    log('An updated Placemap session ($_sessionId) was received by the remote');
+    final newSession = Session.fromSnapshot(doc);
+    final oldState = _session.state;
+
+    _session = newSession;
+
+    if (_session.tradRef != null) {
+      final traditionSnapshot = await _session.tradRef.get();
+      _tradition = Tradition.fromSnapshot(traditionSnapshot);
+
+      if (_session.tradReviewRef != null) {
+        final tradReviewSnapshot = await _session.tradReviewRef.get();
+        _review = TraditionReview.fromSnapshot(tradReviewSnapshot);
+      } else {
+        clearReview();
+      }
+    }
+
+    if (_session.state != oldState || routeChange) {
+      dirtyScreen = true;
+      routeChange = false;
+    }
+
+    if (_session.defector()) {
+      final self = await _session.getSelf();
+      if (self.distracted && _session.recallMsg != null) {
+        PlacemapUtils.showNotification('Hey, come back!', _session.recallMsg);
+      }
+    } else {
+      recallAck = false;
     }
 
     notifyListeners();

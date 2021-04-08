@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:provider/provider.dart';
 
 class PlacemapButton extends StatelessWidget {
   final VoidCallback onPressed;
   final String text;
+  final Color textColor;
+  final Color backgroundColor;
 
-  const PlacemapButton({Key key, @required this.onPressed, @required this.text})
+  const PlacemapButton(
+      {Key key,
+      @required this.onPressed,
+      @required this.text,
+      this.textColor,
+      this.backgroundColor})
       : super(key: key);
 
   @override
@@ -16,15 +22,15 @@ class PlacemapButton extends StatelessWidget {
 
     return TextButton(
         style: TextButton.styleFrom(
-          primary: theme.textTheme.bodyText1.color,
-          backgroundColor: theme.primaryColor,
+          backgroundColor: backgroundColor ?? theme.primaryColor,
           textStyle: theme.textTheme.headline4,
           shape: BeveledRectangleBorder(),
         ),
         onPressed: onPressed,
         child: Text(
           text.toUpperCase(),
-          style: theme.textTheme.headline5,
+          style: theme.textTheme.headline5
+              .copyWith(color: textColor ?? theme.textTheme.bodyText1.color),
           textAlign: TextAlign.center,
         ));
   }
@@ -53,12 +59,12 @@ class DividerText extends StatelessWidget {
           if (text != null)
             Flexible(
                 child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: 10),
-                  child: Text(
-                    text,
-                    style: theme.textTheme.bodyText1,
-                  ),
-                )),
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              child: Text(
+                text,
+                style: theme.textTheme.bodyText1,
+              ),
+            )),
           Flexible(
             child: Divider(
               thickness: 2,
