@@ -118,7 +118,7 @@ class Tutorial1 extends StatelessWidget {
 
 class Tutorial2 extends StatelessWidget {
   static final desc =
-      "You'll notice the circle on the top left of the screen. It signals the amount of activate players; that is, the amount of players that have the Placemap app open and that, as such, are not using their phones for other purposes.";
+      "You'll notice the circle on the top left of the screen. It signals the amount of active players; that is, the amount of players that have the Placemap app open and that, as such, are not using their phones for other purposes.";
 
   @override
   Widget build(BuildContext context) {

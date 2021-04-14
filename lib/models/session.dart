@@ -10,6 +10,7 @@ class Session extends ChangeNotifier {
   SessionState _state;
   DocumentReference _tradRef;
   DocumentReference _tradReviewRef;
+  String recallImg;
   String recallMsg;
   final List<Participant> _participants;
   final DocumentReference docRef;
@@ -26,6 +27,7 @@ class Session extends ChangeNotifier {
             .firstWhere((state) => (state.toString() == map['state'])),
         _tradRef = map['tradRef'],
         _tradReviewRef = map['tradReviewRef'],
+        recallImg = map['recallImg'],
         recallMsg = map['recallMsg'],
         _participants = (map['participants'] as List<dynamic>)
             .map((participant) =>
@@ -37,6 +39,7 @@ class Session extends ChangeNotifier {
         'state': _state.toString(),
         'tradRef': _tradRef ?? null,
         'tradReviewRef': _tradReviewRef ?? null,
+        'recallImg': recallImg,
         'recallMsg': recallMsg,
         'participants':
             _participants.map((participant) => participant.map).toList()
@@ -111,15 +114,16 @@ class Session extends ChangeNotifier {
   }
 
   bool allQuit() {
-    return _participants.firstWhere((participant) => !participant.quit,
+    return _participants.firstWhere(
+            (participant) => !participant.quit && !participant.distracted,
             orElse: () => null) ==
         null;
   }
 
-  bool defector() {
-    return _participants.firstWhere((participant) => participant.distracted && !participant.camera,
-            orElse: () => null) !=
-        null;
+  int distractedCount() {
+    return _participants
+        .where((participant) => participant.distracted && !participant.camera)
+        .length;
   }
 
   int get participantCount => _participants.length;

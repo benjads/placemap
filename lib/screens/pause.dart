@@ -48,7 +48,7 @@ class PauseScreen extends StatelessWidget {
                     appData.session.setSelfQuit(true);
                     Navigator.popAndPushNamed(context, '/exit');
                   },
-                  text: 'Exit'),
+                  text: 'End the Meal'),
             ],
           ),
         ),

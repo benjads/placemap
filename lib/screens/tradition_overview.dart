@@ -107,6 +107,13 @@ enum TraditionState { overview, extended, post }
 
 class _TraditionContentState extends State<TraditionContent> {
   TraditionState _traditionState = TraditionState.overview;
+  SpeechService speechService;
+
+  @override
+  void initState() {
+    super.initState();
+    speechService = context.read<SpeechService>();
+  }
 
   void _openExtended() {
     setState(() {
@@ -115,6 +122,7 @@ class _TraditionContentState extends State<TraditionContent> {
   }
 
   void _end() {
+    speechService.stop();
     setState(() {
       _traditionState = TraditionState.post;
     });
@@ -262,7 +270,8 @@ class TraditionExtended extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 20, 20, 80),
                       child: Text(appData.tradition.fullDesc,
-                          style: theme.textTheme.bodyText1),
+                          style: theme.textTheme.bodyText1.copyWith(fontSize: 20, height: 1.5)
+                      ),
                     ),
                   ],
                 ),

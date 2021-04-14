@@ -32,7 +32,7 @@ class IntroScreen extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Scaffold(
-      resizeToAvoidBottomPadding: false,
+      // resizeToAvoidBottomPadding: false,
       body: Container(
         padding: EdgeInsets.only(top: 20),
         decoration: BoxDecoration(

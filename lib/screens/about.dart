@@ -4,8 +4,8 @@ import 'package:placemap/screens/intro.dart';
 
 class AboutScreen extends StatelessWidget {
   static const desc =
-      "PlaceMap is an app designed to support playful and social interaction at mealtime. It was designed by a team of researchers at UC Santa Cruz. "
-      "If you'd like to know more about the project, please reach out to faltarri@ucsc.edu";
+      "PlaceMap is an app designed to support playful and social interaction at mealtime. It was designed by a team of researchers at UC Santa Cruz. "
+      "If you'd like to know more about the project, please reach out to faltarri@ucsc.edu";
 
   @override
   Widget build(BuildContext context) {
@@ -15,16 +15,17 @@ class AboutScreen extends StatelessWidget {
       showTitle: true,
       footer: null,
       content: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Container(
-            padding: EdgeInsets.symmetric(horizontal: 12),
+            padding: EdgeInsets.symmetric(horizontal: 30),
             child: Text(
               desc,
-              style: theme.textTheme.bodyText1,
-              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyText1.copyWith(fontSize: 20, height: 1.25),
+              textAlign: TextAlign.left,
             ),
           ),
-          SizedBox(height: 10),
+          SizedBox(height: 50),
           PlacemapButton(onPressed: () => Navigator.pop(context), text: 'Back'),
         ],
       ),

@@ -1,13 +1,9 @@
 import 'dart:io';
 import 'dart:math';
-import 'package:android_intent/android_intent.dart';
 import 'package:flutter/services.dart';
-import 'package:http/http.dart' as http;
 
 import 'package:device_info/device_info.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:path_provider/path_provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 class PlacemapUtils {
   static DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();

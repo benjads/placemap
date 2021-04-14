@@ -19,6 +19,7 @@ class AppData extends ChangeNotifier {
   bool dirtyScreen = false;
   bool routeChange = false;
   bool _recallAck = false;
+  bool _selfDistracted = false;
 
   Tradition _tradition;
   TraditionReview _review;
@@ -30,9 +31,15 @@ class AppData extends ChangeNotifier {
   Tradition get tradition => _tradition;
   TraditionReview get review => _review;
   bool get recallAck => _recallAck;
+  bool get selfDistracted => _selfDistracted;
 
   set recallAck(bool acknowledged) {
     _recallAck = acknowledged;
+    notifyListeners();
+  }
+
+  set selfDistracted(bool distracted) {
+    _selfDistracted = distracted;
     notifyListeners();
   }
 
@@ -118,7 +125,7 @@ class AppData extends ChangeNotifier {
       routeChange = false;
     }
 
-    if (_session.defector()) {
+    if (_session.distractedCount() > 0) {
       final self = await _session.getSelf();
       if (self.distracted && _session.recallMsg != null) {
         PlacemapUtils.showNotification('Hey, come back!', _session.recallMsg);

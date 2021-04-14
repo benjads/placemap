@@ -46,7 +46,7 @@ class DividerText extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+      padding: EdgeInsets.symmetric(vertical: 40, horizontal: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -95,12 +95,12 @@ class ParticipantBubbles extends StatelessWidget {
                   shape: CircleBorder(),
                   color: theme.colorScheme.onPrimary,
                   child: Container(
-                    height: 60,
-                    width: 60,
+                    height: 50,
+                    width: 50,
                     child: Center(
                       child: Text(
                         i == 0 ? 'You' : 'P${i + 1}',
-                        style: theme.textTheme.headline5
+                        style: theme.textTheme.headline6
                             .copyWith(color: theme.colorScheme.primaryVariant),
                       ),
                     ),

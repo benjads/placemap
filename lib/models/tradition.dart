@@ -99,7 +99,7 @@ class Tradition {
         await TraditionReview.allReviews(appData.session);
 
     final rng = Random();
-    final isFirst = traditions.length == 0;
+    final isFirst = reviews.length == 0;
 
     var idx = rng.nextInt(traditions.length);
     var tradition = traditions[idx];

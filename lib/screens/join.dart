@@ -17,7 +17,9 @@ class JoinScreen extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CreateSection(),
+            Visibility(
+                visible: MediaQuery.of(context).viewInsets.bottom == 0,
+                child: CreateSection()),
             DividerText(text: 'or'),
             ExistingSection(),
           ],
@@ -111,8 +113,11 @@ class _ExistingSectionState extends State<ExistingSection> {
       child: Column(
         children: [
           Padding(
-            padding: EdgeInsets.symmetric(vertical: 20, horizontal: 50),
+            padding: EdgeInsets.symmetric(horizontal: 50),
             child: TextFormField(
+              enableSuggestions: false,
+              enableInteractiveSelection: false,
+              autocorrect: false,
               controller: _idController,
               decoration: InputDecoration(
                 hintText: 'enter a code here',
