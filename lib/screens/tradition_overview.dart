@@ -44,13 +44,16 @@ class _TraditionViewState extends State<TraditionView> {
       );
     }
 
-    return Scaffold(
-      body: ActivityWrapper(
-        child: Stack(
-          children: [
-            Positioned.fill(child: TraditionContent()),
-            Positioned(top: 50, right: 30, child: TtsButton()),
-          ],
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        body: ActivityWrapper(
+          child: Stack(
+            children: [
+              Positioned.fill(child: TraditionContent()),
+              Positioned(top: 50, right: 30, child: TtsButton()),
+            ],
+          ),
         ),
       ),
     );
@@ -304,7 +307,7 @@ class _TraditionMediaState extends State<TraditionMedia> {
       _ytController = YoutubePlayerController(
         initialVideoId: YoutubePlayer.convertUrlToId(tradition.videoUri),
         flags: YoutubePlayerFlags(
-          autoPlay: true,
+          autoPlay: false,
           disableDragSeek: true,
           mute: false,
           enableCaption: false,
@@ -327,7 +330,7 @@ class _TraditionMediaState extends State<TraditionMedia> {
     }
 
     if (tradition.photos != null) {
-      tradition.cachedPhotos.forEach((image) {
+      tradition.cachedPhotos.forEach((url, image) {
         media.add(Image(
           image: image.image,
         ));
@@ -374,7 +377,7 @@ class TraditionPost extends StatelessWidget {
         padding: EdgeInsets.only(top: 50),
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: appData.tradition.cachedCoverImg.image,
+            image: appData.tradition.cachedCoverImg.image ?? NetworkImage(appData.tradition.cachedCoverUrl),
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
                 theme.colorScheme.primary.withOpacity(0.2), BlendMode.dstATop),

@@ -21,6 +21,10 @@ class AppData extends ChangeNotifier {
   bool _recallAck = false;
   bool _selfDistracted = false;
 
+  bool _demoDecrease = false;
+  bool _demoRecallMenu = false;
+  bool _demoRecallPopup = false;
+
   Tradition _tradition;
   TraditionReview _review;
   bool cachedAssets = false;
@@ -32,6 +36,10 @@ class AppData extends ChangeNotifier {
   TraditionReview get review => _review;
   bool get recallAck => _recallAck;
   bool get selfDistracted => _selfDistracted;
+  bool get demoRecallPopup => _demoRecallPopup;
+  bool get demoRecallMenu => _demoRecallMenu;
+  bool get demoDecrease => _demoDecrease;
+
 
   set recallAck(bool acknowledged) {
     _recallAck = acknowledged;
@@ -40,6 +48,22 @@ class AppData extends ChangeNotifier {
 
   set selfDistracted(bool distracted) {
     _selfDistracted = distracted;
+    notifyListeners();
+  }
+
+
+  set demoDecrease(bool demoDecrease) {
+    _demoDecrease = demoDecrease;
+    notifyListeners();
+  }
+
+  set demoRecallMenu(bool demoRecallMenu) {
+    _demoRecallMenu = demoRecallMenu;
+    notifyListeners();
+  }
+
+  set demoRecallPopup(bool demoRecallPopup) {
+    _demoRecallPopup = demoRecallPopup;
     notifyListeners();
   }
 
@@ -58,7 +82,7 @@ class AppData extends ChangeNotifier {
     _session = Session.initialize(_sessionId, [participant]);
     await _session.update();
 
-    sessionId = _sessionId;
+    setSessionId(_sessionId);
     _host = true;
     notifyListeners();
 
@@ -78,11 +102,7 @@ class AppData extends ChangeNotifier {
     notifyListeners();
   }
 
-  set sessionId(String sessionId) {
-    _setSessionId(sessionId);
-  }
-
-  void _setSessionId(String sessionId) async {
+  Future<void> setSessionId(String sessionId) async {
     _sessionId = sessionId;
     _sessionSub?.cancel();
 

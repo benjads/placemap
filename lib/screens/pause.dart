@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/screens/activity_wrapper.dart';

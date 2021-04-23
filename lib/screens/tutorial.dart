@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/models/tradition.dart';
+import 'package:placemap/utils.dart';
 import 'package:provider/provider.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
@@ -12,14 +13,19 @@ class TutorialScreen extends StatelessWidget {
       "With that, you're all set! We hope you enjoy a mealtime full of fun and cultural surprises.";
 
   final Widget child;
+  final VoidCallback nextFunction;
   final String next;
   final String nextText;
 
   TutorialScreen(
-      {@required this.next, @required this.nextText, @required this.child});
+      {@required this.next,
+      this.nextFunction,
+      @required this.nextText,
+      @required this.child});
 
   TutorialScreen.end()
       : next = null,
+        nextFunction = null,
         nextText = null,
         child = null;
 
@@ -58,7 +64,10 @@ class TutorialScreen extends StatelessWidget {
         footer: Padding(
           padding: const EdgeInsets.only(bottom: 20),
           child: PlacemapButton(
-            onPressed: () => Navigator.popAndPushNamed(context, next),
+            onPressed: () {
+              nextFunction?.call();
+              Navigator.popAndPushNamed(context, next);
+            },
             text: nextText,
           ),
         ),
@@ -123,10 +132,124 @@ class Tutorial2 extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final AppData appData = context.read<AppData>();
+
+    return TutorialScreen(
+      next: '/tutorial/3',
+      nextFunction: () => appData.demoDecrease = true,
+      nextText: "Got It",
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 50),
+        child: Text(
+          desc,
+          style: theme.textTheme.headline5,
+        ),
+      ),
+    );
+  }
+}
+
+class Tutorial3 extends StatelessWidget {
+  static final desc =
+      "If someone closes the app to use another feature of their phone, the circle on the other people's screen will turn red. It will also reflect the decrease in the amount of active players.";
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final AppData appData = context.read<AppData>();
+
+    return TutorialScreen(
+      next: '/tutorial/4',
+      nextFunction: () {
+        appData.demoDecrease = false;
+        appData.demoRecallMenu = true;
+      },
+      nextText: "I See",
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 50),
+        child: Text(
+          desc,
+          style: theme.textTheme.headline5,
+        ),
+      ),
+    );
+  }
+}
+
+class Tutorial4 extends StatelessWidget {
+  static final desc =
+      "When that happens, you can click on the circle. A pop-up will open, giving you an opportunity to persuade that person to return to the experience.";
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final AppData appData = context.read<AppData>();
+
+    return TutorialScreen(
+      next: '/tutorial/5',
+      nextFunction: () {
+        appData.demoRecallMenu = false;
+        appData.demoRecallPopup = true;
+      },
+      nextText: "Got It",
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 50),
+        child: Text(
+          desc,
+          style: theme.textTheme.headline5,
+        ),
+      ),
+    );
+  }
+}
+
+class Tutorial5 extends StatelessWidget {
+  static final desc =
+      "The person who broke the social pact will then receive a push notification with a meme. It will remind them that they shouldn't isolate themselves from the shared experience.";
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final AppData appData = context.read<AppData>();
+
+    return TutorialScreen(
+      next: '/tutorial/6',
+      nextFunction: () {
+        appData.demoRecallPopup = false;
+      },
+      nextText: "Okay",
+      child: Container(
+        padding: const EdgeInsets.only(top: 180, right: 50, bottom: 0, left: 50),
+        child: Text(
+          desc,
+          style: theme.textTheme.headline5,
+        ),
+      ),
+    );
+  }
+}
+
+class Tutorial6 extends StatelessWidget {
+  static final desc =
+      "So before we start playing with our collection of playful food traditions from allover the world, we need you to allow PlaceMap to send your push notifications.";
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
 
     return TutorialScreen(
       next: '/tutorial/end',
-      nextText: "Got It",
+      nextFunction: () async {
+        // var status = await Permission.notification.status;
+        // if (status.isUndetermined || status.isDenied) {
+        //   Permission.notification.request();
+        // } else if (await Permission.notification.isPermanentlyDenied) {
+        //   openAppSettings();
+        // }
+
+        PlacemapUtils.initializeNotifications();
+      },
+      nextText: "Done",
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 50),
         child: Text(

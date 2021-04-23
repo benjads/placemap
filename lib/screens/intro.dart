@@ -31,60 +31,63 @@ class IntroScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    return Scaffold(
-      // resizeToAvoidBottomPadding: false,
-      body: Container(
-        padding: EdgeInsets.only(top: 20),
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [theme.colorScheme.primary, theme.colorScheme.primaryVariant],
-        )),
-        child: Stack(
-          alignment: Alignment.topCenter,
-          children: [
-            footer == null
-                ? Positioned(
-                    height: 450,
-                    bottom: -200,
-                    child: Image(
-                      image: AssetImage('graphics/globe.png'),
+    return WillPopScope(
+      onWillPop: () async => false,
+      child: Scaffold(
+        // resizeToAvoidBottomPadding: false,
+        body: Container(
+          padding: EdgeInsets.only(top: 20),
+          decoration: BoxDecoration(
+              gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [theme.colorScheme.primary, theme.colorScheme.primaryVariant],
+          )),
+          child: Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              footer == null
+                  ? Positioned(
+                      height: 450,
+                      bottom: -200,
+                      child: Image(
+                        image: AssetImage('graphics/globe.png'),
+                      ),
+                    )
+                  : Positioned(
+                      bottom: 0,
+                      child: footer,
                     ),
-                  )
-                : Positioned(
-                    bottom: 0,
-                    child: footer,
+              Positioned.fill(
+                child: Container(
+                  padding: EdgeInsets.only(
+                      bottom: footer == null && footerPadding ? 200 : 0,
+                      top: simpleLogo ? 70 : 0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      if (showTitle) _title(),
+                      Expanded(
+                          child: Align(
+                        alignment: Alignment.center,
+                        child: content,
+                      )),
+                    ],
                   ),
-            Positioned.fill(
-              child: Container(
-                padding: EdgeInsets.only(
-                    bottom: footer == null && footerPadding ? 200 : 0,
-                    top: simpleLogo ? 70 : 0),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.center,
-                  children: [
-                    if (showTitle) _title(),
-                    Expanded(
-                        child: Align(
-                      alignment: Alignment.center,
-                      child: content,
-                    )),
-                  ],
                 ),
               ),
-            ),
-            if (simpleLogo)
-              Positioned(
-                top: 20,
-                child: Text(
-                  'PlaceMap',
-                  style: GoogleFonts.nanumBrushScript(
-                      textStyle: theme.textTheme.headline3),
+              if (simpleLogo)
+                Positioned(
+                  top: 20,
+                  child: Text(
+                    'PlaceMap',
+                    style: GoogleFonts.nanumBrushScript(
+                        textStyle: theme.textTheme.headline3),
+                  ),
                 ),
-              ),
-          ],
+            ],
+          ),
         ),
       ),
     );

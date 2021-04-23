@@ -72,10 +72,10 @@ class ReviewSelectView extends StatelessWidget {
 
 class ReviewResultsView extends StatelessWidget {
   
-  void _search(BuildContext context) {
+  void _home(BuildContext context) {
     final AppData appData = context.read<AppData>();
     appData.session.setState(SessionState.search, true);
-    Navigator.popAndPushNamed(context, '/search');
+    Navigator.popAndPushNamed(context, '/pause');
   }
   
   @override
@@ -94,7 +94,7 @@ class ReviewResultsView extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 10),
-          PlacemapButton(onPressed: () => _search(context), text: 'BACK TO SEARCH'),
+          PlacemapButton(onPressed: () => _home(context), text: 'BACK TO SEARCH'),
           SizedBox(height: 20),
           ReviewResultsInner(),
         ],

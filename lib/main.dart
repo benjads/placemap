@@ -34,8 +34,6 @@ class PlacemapApp extends StatelessWidget {
       DeviceOrientation.portraitDown,
     ]);
 
-    PlacemapUtils.initializeNotifications();
-
     return FutureBuilder(
       future: _initialization,
       builder: (context, snapshot) {
@@ -75,6 +73,14 @@ class PlacemapApp extends StatelessWidget {
                           return Tutorial1();
                         case '/tutorial/2':
                           return Tutorial2();
+                        case '/tutorial/3':
+                          return Tutorial3();
+                        case '/tutorial/4':
+                          return Tutorial4();
+                        case '/tutorial/5':
+                          return Tutorial5();
+                        case '/tutorial/6':
+                          return Tutorial6();
                         case '/tutorial/end':
                           return TutorialScreen.end();
                         case '/tradition':

@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:provider/provider.dart';
@@ -88,7 +90,7 @@ class ParticipantBubbles extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            for (int i = 0; i < appData.session.participantCount; i++)
+            for (int i = 0; i < min(5, appData.session.participantCount); i++)
               Padding(
                 padding: EdgeInsets.only(right: 10),
                 child: Material(
@@ -99,7 +101,11 @@ class ParticipantBubbles extends StatelessWidget {
                     width: 50,
                     child: Center(
                       child: Text(
-                        i == 0 ? 'You' : 'P${i + 1}',
+                        i == 0
+                            ? 'You'
+                            : (appData.session.participantCount > 5 && i == 5
+                                ? '...'
+                                : 'P${i + 1}'),
                         style: theme.textTheme.headline6
                             .copyWith(color: theme.colorScheme.primaryVariant),
                       ),

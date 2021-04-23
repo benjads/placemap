@@ -11,12 +11,13 @@ class Tradition {
   final String name;
   final String origin;
   final String coverImg;
+  String _cachedCoverUrl;
   Image _cachedCoverImg;
   final String ttsDesc;
   final String fullDesc;
   final String videoUri;
   final List<String> photos;
-  List<Image> _cachedPhotos;
+  Map<String, Image> _cachedPhotos;
   final List<String> keywords;
   final bool allowedFirst;
   final DocumentReference docRef;
@@ -56,28 +57,31 @@ class Tradition {
         allowedFirst = map['allowedFirst'];
 
   Future<void> cacheImages(BuildContext context, bool includePhotos) async {
-    final coverImgUrl = await FirebaseStorage.instance
+    _cachedCoverUrl = await FirebaseStorage.instance
         .ref('traditions/$coverImg')
         .getDownloadURL();
-    _cachedCoverImg = Image.network(coverImgUrl);
+    _cachedCoverImg = Image.network(_cachedCoverUrl);
     await precacheImage(_cachedCoverImg.image, context);
 
     if (photos != null && includePhotos) {
-      _cachedPhotos = List<Image>();
+      _cachedPhotos = Map<String, Image>();
       photos.forEach((photo) async {
         var photoUrl = await FirebaseStorage.instance
             .ref('traditions/$photo')
             .getDownloadURL();
         final photoImg = Image.network(photoUrl);
-        _cachedPhotos.add(photoImg);
+        _cachedPhotos[photoUrl] = photoImg;
         await precacheImage(photoImg.image, context);
       });
     }
   }
 
+
+  String get cachedCoverUrl => _cachedCoverUrl;
+
   Image get cachedCoverImg => _cachedCoverImg;
 
-  List<Image> get cachedPhotos => _cachedPhotos;
+  Map<String, Image> get cachedPhotos => _cachedPhotos;
 
   @override
   bool operator ==(Object other) => other is Tradition && docRef.id == other.docRef.id;
@@ -159,5 +163,4 @@ class Tradition {
     final Random rng = Random();
     return tradition.keywords[rng.nextInt(tradition.keywords.length)];
   }
-
 }

@@ -46,6 +46,9 @@ class _ActivityWrapperState extends State<ActivityWrapper>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
+    if (appData.session.state == SessionState.tutorial)
+      return;
+
     if (state != _currentState) {
       _currentState = state;
 
@@ -64,9 +67,14 @@ class _ActivityWrapperState extends State<ActivityWrapper>
   }
 
   void closePopup() {
-    appData.session.recallImg = null;
-    appData.session.recallMsg = null;
     appData.selfDistracted = false;
+
+    if (appData.session.distractedCount() == 0) {
+      appData.session.recallImg = null;
+      appData.session.recallMsg = null;
+    }
+
+    appData.session.update();
   }
 
   @override
@@ -91,21 +99,21 @@ class _ActivityWrapperState extends State<ActivityWrapper>
           alignment: Alignment.topCenter,
           children: [
             Positioned.fill(child: child),
-            appData.session.distractedCount() > 0 && !appData.recallAck
+            (appData.session.distractedCount() > 0 && !appData.recallAck) || appData.demoRecallMenu
                 ? RecallMenu()
                 : Positioned(
                     top: 40,
                     left: 20,
                     child: Material(
                       shape: CircleBorder(),
-                      color: theme.colorScheme.primaryVariant,
+                      color: appData.demoDecrease ? theme.colorScheme.error : theme.colorScheme.primaryVariant,
                       child: Container(
                         height: 50,
                         width: 50,
                         child: Center(
                           child: Text(
                             (appData.session.participantCount -
-                                    appData.session.distractedCount())
+                                    appData.session.distractedCount() - (appData.demoDecrease ? 1 : 0))
                                 .toString(),
                             style: theme.textTheme.headline4
                                 .copyWith(color: Colors.white, height: 1.5),
@@ -115,9 +123,9 @@ class _ActivityWrapperState extends State<ActivityWrapper>
                       ),
                     ),
                   ),
-            if (appData.selfDistracted &&
+            if ((appData.selfDistracted &&
                 appData.session.recallImg != null &&
-                appData.session.recallMsg != null)
+                appData.session.recallMsg != null) || appData.demoRecallPopup)
               RecallPopup(closePopup),
             if (Platform.isAndroid)
               Positioned(
@@ -158,7 +166,7 @@ class RecallMenu extends StatelessWidget {
 
   void sendMessage(AppData appData) {
     final Random rng = Random();
-    appData.session.recallImg = 'graphics/recall/meme${rng.nextInt(12)}.jpeg';
+    appData.session.recallImg = 'graphics/recall/meme${rng.nextInt(12) + 1}.jpeg';
     appData.session.recallMsg = messages[rng.nextInt(messages.length)];
     appData.session.update();
   }
@@ -211,6 +219,9 @@ class RecallMenu extends StatelessWidget {
                       SizedBox(height: 10),
                       PlacemapButton(
                         onPressed: () {
+                          if (appData.demoRecallMenu)
+                            return;
+
                           appData.recallAck = true;
                         },
                         text: 'Ignore',
@@ -220,6 +231,9 @@ class RecallMenu extends StatelessWidget {
                       SizedBox(height: 10),
                       PlacemapButton(
                         onPressed: () {
+                          if (appData.demoRecallMenu)
+                            return;
+
                           sendMessage(appData);
                           appData.recallAck = true;
                         },
@@ -238,6 +252,8 @@ class RecallMenu extends StatelessWidget {
 }
 
 class RecallPopup extends StatelessWidget {
+  static const demoRecall = "Hey! Shouldn't you get back to your shared mealtime experience?";
+
   final VoidCallback closePopup;
 
   RecallPopup(this.closePopup);
@@ -269,24 +285,25 @@ class RecallPopup extends StatelessWidget {
                       textStyle: theme.textTheme.headline3
                           .copyWith(color: Colors.white)),
                 ),
-                Material(
-                  child: IconButton(
-                      onPressed: closePopup,
-                      icon: Icon(
-                        Icons.close,
-                        color: Colors.white,
-                      )),
-                  color: Colors.transparent,
-                )
+                if (!appData.demoRecallPopup)
+                  Material(
+                    child: IconButton(
+                        onPressed: closePopup,
+                        icon: Icon(
+                          Icons.close,
+                          color: Colors.white,
+                        )),
+                    color: Colors.transparent,
+                  ),
               ],
             ),
             SizedBox(height: 20),
             SizedBox(
               height: 150,
-              child: Image(image: AssetImage(appData.session.recallImg)),
+              child: Image(image: AssetImage(appData.session.recallImg ?? 'graphics/recall/meme1.jpeg')),
             ),
             SizedBox(height: 20),
-            Text(appData.session.recallMsg,
+            Text(appData.session.recallMsg ?? demoRecall,
                 style: theme.textTheme.bodyText1.copyWith(color: Colors.white)),
           ],
         ),

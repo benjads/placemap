@@ -13,9 +13,9 @@ class JoinScreen extends StatelessWidget {
       footer: null,
       footerPadding: false,
       content: Padding(
-        padding: EdgeInsets.only(top: 20),
+        padding: EdgeInsets.only(top: 30),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
             Visibility(
                 visible: MediaQuery.of(context).viewInsets.bottom == 0,
@@ -85,8 +85,12 @@ class ExistingSection extends StatefulWidget {
 class _ExistingSectionState extends State<ExistingSection> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _idController = TextEditingController();
+  bool submitted = false;
 
   void _submit() async {
+    if (submitted)
+      return;
+
     final id = _idController.value.text.toUpperCase();
     final Session session = await Session.load(id);
 
@@ -96,12 +100,14 @@ class _ExistingSectionState extends State<ExistingSection> {
       return;
     }
 
+    submitted = true;
+
     await session.addSelf();
 
     final appData = context.read<AppData>();
-    appData.sessionId = id;
+    await appData.setSessionId(id);
 
-    Navigator.pushNamed(context, '/join/wait');
+    Navigator.popAndPushNamed(context, '/join/wait');
   }
 
   @override

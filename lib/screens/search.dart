@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/session.dart';
@@ -25,12 +23,6 @@ class SearchScreen extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (appData.review != null)
-                Text(
-                  'Results for "${appData.review.nextKeyword}"',
-                  style: theme.textTheme.headline5,
-                  textAlign: TextAlign.center,
-                ),
               SearchScreenInner(),
             ],
           ),

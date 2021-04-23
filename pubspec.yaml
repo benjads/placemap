@@ -33,6 +33,7 @@ dependencies:
   google_fonts: ^1.1.2
   carousel_slider: ^3.0.0
   flutter_local_notifications: ^4.0.1+2
+#  permission_handler: ^5.1.0+2
 
 dev_dependencies:
   flutter_test:
