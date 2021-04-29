@@ -74,7 +74,7 @@ class ReviewResultsView extends StatelessWidget {
   
   void _home(BuildContext context) {
     final AppData appData = context.read<AppData>();
-    appData.session.setState(SessionState.search, true);
+    appData.session.setState(SessionState.pause, true);
     Navigator.popAndPushNamed(context, '/pause');
   }
   

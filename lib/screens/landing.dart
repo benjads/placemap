@@ -18,7 +18,10 @@ class LandingScreen extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           PlacemapButton(
-              onPressed: () => Navigator.pushNamed(context, '/join'),
+              onPressed: () async {
+                await appData.createSession();
+                Navigator.pushNamed(context, '/join');
+              },
               text: 'Start'),
           SizedBox(height: 30),
           PlacemapButton(

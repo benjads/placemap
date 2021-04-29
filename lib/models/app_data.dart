@@ -40,7 +40,6 @@ class AppData extends ChangeNotifier {
   bool get demoRecallMenu => _demoRecallMenu;
   bool get demoDecrease => _demoDecrease;
 
-
   set recallAck(bool acknowledged) {
     _recallAck = acknowledged;
     notifyListeners();
@@ -50,7 +49,6 @@ class AppData extends ChangeNotifier {
     _selfDistracted = distracted;
     notifyListeners();
   }
-
 
   set demoDecrease(bool demoDecrease) {
     _demoDecrease = demoDecrease;
@@ -67,9 +65,7 @@ class AppData extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<Session> getOrCreateSession() async {
-    if (_session != null && _host) return _session;
-
+  Future<Session> createSession() async {
     _sessionId = PlacemapUtils.getSessionCode();
     while ((await FirebaseFirestore.instance
             .collection('sessions')
@@ -82,7 +78,7 @@ class AppData extends ChangeNotifier {
     _session = Session.initialize(_sessionId, [participant]);
     await _session.update();
 
-    setSessionId(_sessionId);
+    await setSessionId(_sessionId);
     _host = true;
     notifyListeners();
 
@@ -92,8 +88,8 @@ class AppData extends ChangeNotifier {
   Future<void> destroySession() async {
     assert(_session != null);
 
+    await _sessionSub?.cancel();
     await _session.docRef.delete();
-    _sessionSub?.cancel();
     _session = null;
     _sessionId = null;
     _sessionSub = null;
@@ -103,28 +99,31 @@ class AppData extends ChangeNotifier {
   }
 
   Future<void> setSessionId(String sessionId) async {
+    log('Changing app session to: $sessionId');
     _sessionId = sessionId;
     _sessionSub?.cancel();
 
     if (_sessionId != null) {
-      _sessionSub = FirebaseFirestore.instance
+      _host = false;
+
+      final Stream<DocumentSnapshot> sessionStream = FirebaseFirestore.instance
           .collection('sessions')
           .doc(sessionId)
-          .snapshots()
-          .listen((doc) async {
-        await _updateSession(doc);
-      });
+          .snapshots();
 
-      _host = false;
+      await _updateSession(await sessionStream.first);
+      _sessionSub = sessionStream.listen((doc) {
+        _updateSession(doc);
+      });
     }
 
     notifyListeners();
   }
 
-  Future _updateSession(DocumentSnapshot doc) async {
+  Future<void> _updateSession(DocumentSnapshot doc) async {
     log('An updated Placemap session ($_sessionId) was received by the remote');
     final newSession = Session.fromSnapshot(doc);
-    final oldState = _session.state;
+    final oldState = _session?.state;
 
     _session = newSession;
 
@@ -140,7 +139,7 @@ class AppData extends ChangeNotifier {
       }
     }
 
-    if (_session.state != oldState || routeChange) {
+    if (oldState != null && (_session.state != oldState || routeChange)) {
       dirtyScreen = true;
       routeChange = false;
     }

@@ -82,28 +82,34 @@ class Session extends ChangeNotifier {
     return update();
   }
 
+  Future<void> removeSelf() async {
+    final self = await getSelf();
+    _participants.remove(self);
+    return update();
+  }
+
   Future<void> setSelfTutorial(bool complete) async {
     final self = await getSelf();
     self.tutorialComplete = complete;
-    update();
+    return update();
   }
 
   Future<void> setSelfQuit(bool quit) async {
     final self = await getSelf();
     self.quit = quit;
-    update();
+    return update();
   }
 
   Future<void> setSelCamera(bool camera) async {
     final self = await getSelf();
     self.camera = camera;
-    update();
+    return update();
   }
 
   Future<void> setSelfDistracted(bool distracted) async {
     final self = await getSelf();
     self.distracted = distracted;
-    update();
+    return update();
   }
 
   bool ready() {

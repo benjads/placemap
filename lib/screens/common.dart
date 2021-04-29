@@ -85,37 +85,42 @@ class ParticipantBubbles extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Consumer<AppData>(
-      builder: (context, appData, _) => Padding(
-        padding: EdgeInsets.symmetric(horizontal: 30),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            for (int i = 0; i < min(5, appData.session.participantCount); i++)
-              Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: Material(
-                  shape: CircleBorder(),
-                  color: theme.colorScheme.onPrimary,
-                  child: Container(
-                    height: 50,
-                    width: 50,
-                    child: Center(
-                      child: Text(
-                        i == 0
-                            ? 'You'
-                            : (appData.session.participantCount > 5 && i == 5
-                                ? '...'
-                                : 'P${i + 1}'),
-                        style: theme.textTheme.headline6
-                            .copyWith(color: theme.colorScheme.primaryVariant),
+      builder: (context, appData, _) {
+        if (appData.session == null)
+          return SizedBox.shrink();
+
+        return Padding(
+          padding: EdgeInsets.symmetric(horizontal: 30),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              for (int i = 0; i < min(5, appData.session.participantCount); i++)
+                Padding(
+                  padding: EdgeInsets.only(right: 10),
+                  child: Material(
+                    shape: CircleBorder(),
+                    color: theme.colorScheme.onPrimary,
+                    child: Container(
+                      height: 50,
+                      width: 50,
+                      child: Center(
+                        child: Text(
+                          i == 0
+                              ? 'You'
+                              : (appData.session.participantCount > 5 && i == 5
+                              ? '...'
+                              : 'P${i + 1}'),
+                          style: theme.textTheme.headline6
+                              .copyWith(color: theme.colorScheme.primaryVariant),
+                        ),
                       ),
                     ),
                   ),
-                ),
-              )
-          ],
-        ),
-      ),
+                )
+            ],
+          ),
+        );
+      }
     );
   }
 }

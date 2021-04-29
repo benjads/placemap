@@ -37,9 +37,12 @@ class _TraditionViewState extends State<TraditionView> {
   @override
   Widget build(BuildContext context) {
     if (!_cached) {
-      return Scaffold(
-        body: Center(
-          child: CircularProgressIndicator(),
+      return WillPopScope(
+        onWillPop: () async => false,
+        child: Scaffold(
+          body: Center(
+            child: CircularProgressIndicator(),
+          ),
         ),
       );
     }

@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/session.dart';
@@ -14,8 +16,10 @@ class WaitScreen extends StatelessWidget {
       showTitle: false,
       footer: null,
       content: Consumer<AppData>(builder: (context, appData, _) {
+        log('Building Wait Screen for ${appData.sessionId}');
         if (appData.session.state != SessionState.waiting) {
-          Future.microtask(() => Navigator.popAndPushNamed(context, appData.session.state.route));
+          Future.microtask(() =>
+              Navigator.popAndPushNamed(context, appData.session.state.route));
         }
 
         return Padding(
@@ -31,7 +35,12 @@ class WaitScreen extends StatelessWidget {
               ParticipantBubbles(),
               SizedBox(height: 20),
               PlacemapButton(
-                  onPressed: () => Navigator.pop(context), text: 'GO BACK'),
+                  onPressed: () async {
+                    await appData.session.removeSelf();
+                    await appData.createSession();
+                    Navigator.popAndPushNamed(context, '/join');
+                  },
+                  text: 'GO BACK'),
             ],
           ),
         );

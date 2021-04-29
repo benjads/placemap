@@ -35,44 +35,36 @@ class CreateSection extends StatelessWidget {
     final theme = Theme.of(context);
     final appData = context.read<AppData>();
 
-    return StreamBuilder(
-      stream: appData.getOrCreateSession().asStream(),
-      builder: (BuildContext context, AsyncSnapshot<Session> snapshot) {
-        if (!snapshot.hasData) {
-          return CircularProgressIndicator();
-        }
+    if (appData.session == null)
+      return SizedBox.shrink();
 
-        final Session session = snapshot.data;
-
-        return Column(
-          children: [
-            Text(
-              'SHARE THIS CODE',
-              style: theme.textTheme.headline4,
-            ),
-            SizedBox(height: 10),
-            Text(
-              session.id,
-              style: theme.textTheme.headline2
-                  .copyWith(fontWeight: FontWeight.bold),
-            ),
-            SizedBox(height: 20),
-            ParticipantBubbles(),
-            SizedBox(height: 10),
-            Text(
-              'AND PRESS',
-              style: theme.textTheme.headline5,
-            ),
-            SizedBox(height: 10),
-            PlacemapButton(
-                onPressed: () {
-                  appData.session.setState(SessionState.tutorial, true);
-                  Navigator.popAndPushNamed(context, '/tutorial/1');
-                },
-                text: "WE'RE READY"),
-          ],
-        );
-      },
+    return Column(
+      children: [
+        Text(
+          'SHARE THIS CODE',
+          style: theme.textTheme.headline4,
+        ),
+        SizedBox(height: 10),
+        Text(
+          appData.session.id,
+          style: theme.textTheme.headline2
+              .copyWith(fontWeight: FontWeight.bold),
+        ),
+        SizedBox(height: 20),
+        ParticipantBubbles(),
+        SizedBox(height: 10),
+        Text(
+          'AND PRESS',
+          style: theme.textTheme.headline5,
+        ),
+        SizedBox(height: 10),
+        PlacemapButton(
+            onPressed: () {
+              appData.session.setState(SessionState.tutorial, true);
+              Navigator.popAndPushNamed(context, '/tutorial/1');
+            },
+            text: "WE'RE READY"),
+      ],
     );
   }
 }
@@ -105,6 +97,7 @@ class _ExistingSectionState extends State<ExistingSection> {
     await session.addSelf();
 
     final appData = context.read<AppData>();
+    await appData.destroySession();
     await appData.setSessionId(id);
 
     Navigator.popAndPushNamed(context, '/join/wait');
