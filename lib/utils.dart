@@ -27,7 +27,7 @@ class PlacemapUtils {
     const AndroidNotificationDetails androidPlatformChannelSpecifics =
     AndroidNotificationDetails(
         'PlaceMap', 'PlaceMap Meal', 'PlaceMap Mealtime Notifications',
-        importance: Importance.max,
+        importance: Importance.high,
         priority: Priority.high,
         ticker: 'ticker');
     const NotificationDetails platformChannelSpecifics =

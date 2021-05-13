@@ -128,8 +128,10 @@ class AppData extends ChangeNotifier {
     _session = newSession;
 
     if (_session.tradRef != null) {
-      final traditionSnapshot = await _session.tradRef.get();
-      _tradition = Tradition.fromSnapshot(traditionSnapshot);
+      if (_tradition == null || _tradition.docRef != _session.tradRef) {
+        final traditionSnapshot = await _session.tradRef.get();
+        _tradition = Tradition.fromSnapshot(traditionSnapshot);
+      }
 
       if (_session.tradReviewRef != null) {
         final tradReviewSnapshot = await _session.tradReviewRef.get();

@@ -15,7 +15,6 @@ import 'package:placemap/screens/tutorial.dart';
 import 'package:placemap/screens/wait.dart';
 import 'package:placemap/speech_service.dart';
 import 'package:placemap/theme.dart';
-import 'package:placemap/utils.dart';
 import 'package:provider/provider.dart';
 
 void main() {
@@ -25,7 +24,6 @@ void main() {
 
 class PlacemapApp extends StatelessWidget {
   final Future<FirebaseApp> _initialization = Firebase.initializeApp();
-  final Stopwatch inactivityStopwatch = Stopwatch();
 
   @override
   Widget build(BuildContext context) {
@@ -49,58 +47,54 @@ class PlacemapApp extends StatelessWidget {
               ChangeNotifierProvider<Preferences>(create: (_) => Preferences()),
               ChangeNotifierProvider<AppData>(create: (_) => AppData()),
               Provider<SpeechService>(create: (_) => SpeechService()),
-              Provider<Stopwatch>.value(value: inactivityStopwatch),
             ],
-            child: Listener(
-              onPointerDown: (_) => handleInput(),
-              child: MaterialApp(
-                title: 'Placemap',
-                theme: appTheme,
-                initialRoute: '/',
-                onGenerateRoute: (RouteSettings settings) {
-                  return PageRouteBuilder(
-                    pageBuilder: (_, __, ___) {
-                      switch (settings.name) {
-                        case '/':
-                          return LandingScreen();
-                        case '/about':
-                          return AboutScreen();
-                        case '/join':
-                          return JoinScreen();
-                        case '/join/wait':
-                          return WaitScreen();
-                        case '/tutorial/1':
-                          return Tutorial1();
-                        case '/tutorial/2':
-                          return Tutorial2();
-                        case '/tutorial/3':
-                          return Tutorial3();
-                        case '/tutorial/4':
-                          return Tutorial4();
-                        case '/tutorial/5':
-                          return Tutorial5();
-                        case '/tutorial/6':
-                          return Tutorial6();
-                        case '/tutorial/end':
-                          return TutorialScreen.end();
-                        case '/tradition':
-                          return TraditionView();
-                        case '/review':
-                          return ReviewScreen();
-                        case '/search':
-                          return SearchScreen();
-                        case '/pause':
-                          return PauseScreen();
-                        case '/exit':
-                          return ExitScreen();
-                      }
+            child: MaterialApp(
+              title: 'Placemap',
+              theme: appTheme,
+              initialRoute: '/',
+              onGenerateRoute: (RouteSettings settings) {
+                return PageRouteBuilder(
+                  pageBuilder: (_, __, ___) {
+                    switch (settings.name) {
+                      case '/':
+                        return LandingScreen();
+                      case '/about':
+                        return AboutScreen();
+                      case '/join':
+                        return JoinScreen();
+                      case '/join/wait':
+                        return WaitScreen();
+                      case '/tutorial/1':
+                        return Tutorial1();
+                      case '/tutorial/2':
+                        return Tutorial2();
+                      case '/tutorial/3':
+                        return Tutorial3();
+                      case '/tutorial/4':
+                        return Tutorial4();
+                      case '/tutorial/5':
+                        return Tutorial5();
+                      case '/tutorial/6':
+                        return Tutorial6();
+                      case '/tutorial/end':
+                        return TutorialScreen.end();
+                      case '/tradition':
+                        return TraditionView();
+                      case '/review':
+                        return ReviewScreen();
+                      case '/search':
+                        return SearchScreen();
+                      case '/pause':
+                        return PauseScreen();
+                      case '/exit':
+                        return ExitScreen();
+                    }
 
-                      return null;
-                    },
-                    transitionDuration: Duration(seconds: 0),
-                  );
-                },
-              ),
+                    return null;
+                  },
+                  transitionDuration: Duration(seconds: 0),
+                );
+              },
             ),
           );
         }
@@ -110,14 +104,5 @@ class PlacemapApp extends StatelessWidget {
         );
       },
     );
-  }
-
-  void handleInput() {
-    if (!inactivityStopwatch.isRunning) {
-      inactivityStopwatch.start();
-      return;
-    }
-
-    inactivityStopwatch.reset();
   }
 }

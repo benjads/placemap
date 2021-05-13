@@ -26,13 +26,11 @@ class _ActivityWrapperState extends State<ActivityWrapper>
     with WidgetsBindingObserver {
   AppLifecycleState _currentState;
   AppData appData;
-  Stopwatch inactivityStopwatch;
 
   @override
   void initState() {
     super.initState();
     appData = context.read<AppData>();
-    inactivityStopwatch = context.read<Stopwatch>();
     WidgetsBinding.instance.addObserver(this);
   }
 
@@ -53,11 +51,8 @@ class _ActivityWrapperState extends State<ActivityWrapper>
       _currentState = state;
 
       if (state == AppLifecycleState.paused) {
-        if (inactivityStopwatch.elapsed <
-            Duration(seconds: inactivitySeconds)) {
-          appData.session.setSelfDistracted(true);
-          appData.selfDistracted = true;
-        }
+        appData.session.setSelfDistracted(true);
+        appData.selfDistracted = true;
       } else if (state == AppLifecycleState.resumed) {
         appData.session.setSelfDistracted(false);
         appData.session.setSelCamera(false);

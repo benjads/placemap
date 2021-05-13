@@ -33,14 +33,26 @@ class WaitScreen extends StatelessWidget {
               ),
               SizedBox(height: 20),
               ParticipantBubbles(),
-              SizedBox(height: 20),
+              SizedBox(height: 30),
+              Text(
+                'Please wait for the host to start the mealtime experience...',
+                style: theme.textTheme.bodyText1,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 60),
+              Text(
+                'Alternatively, you can leave this room',
+                style: theme.textTheme.bodyText1,
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 10),
               PlacemapButton(
                   onPressed: () async {
                     await appData.session.removeSelf();
                     await appData.createSession();
                     Navigator.popAndPushNamed(context, '/join');
                   },
-                  text: 'GO BACK'),
+                  text: 'LEAVE ROOM'),
             ],
           ),
         );

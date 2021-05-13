@@ -141,11 +141,11 @@ class _TraditionContentState extends State<TraditionContent> {
     appData.session.setState(newState, true);
   }
 
-  void _review() async {
+  void _review() {
     _navigate(SessionState.review);
   }
 
-  void _search() async {
+  void _search() {
     _navigate(SessionState.search);
   }
 
@@ -380,7 +380,7 @@ class TraditionPost extends StatelessWidget {
         padding: EdgeInsets.only(top: 50),
         decoration: BoxDecoration(
           image: DecorationImage(
-            image: appData.tradition.cachedCoverImg.image ?? NetworkImage(appData.tradition.cachedCoverUrl),
+            image: appData.tradition.cachedCoverImg.image,
             fit: BoxFit.cover,
             colorFilter: ColorFilter.mode(
                 theme.colorScheme.primary.withOpacity(0.2), BlendMode.dstATop),

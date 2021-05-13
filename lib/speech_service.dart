@@ -10,6 +10,8 @@ class SpeechService {
     _tts.setCompletionHandler(() => _playing = false);
     _tts.setCancelHandler(() => _playing = false);
     _tts.setErrorHandler((_) => _playing = false);
+
+    _tts.setLanguage('en-US');
   }
 
   void speak(String message) {

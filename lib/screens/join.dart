@@ -92,11 +92,15 @@ class _ExistingSectionState extends State<ExistingSection> {
       return;
     }
 
-    submitted = true;
-
-    await session.addSelf();
-
     final appData = context.read<AppData>();
+    if (session.id == appData?.session?.id) {
+      Scaffold.of(context)
+          .showSnackBar(SnackBar(content: Text('You cannot join your own room!')));
+      return;
+    }
+
+    submitted = true;
+    await session.addSelf();
     await appData.destroySession();
     await appData.setSessionId(id);
 

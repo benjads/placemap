@@ -33,12 +33,19 @@ dependencies:
   google_fonts: ^1.1.2
   carousel_slider: ^3.0.0
   flutter_local_notifications: ^4.0.1+2
-#  permission_handler: ^5.1.0+2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   pedantic: ^1.9.0
+  flutter_launcher_icons: ^0.8.1
+
+flutter_icons:
+  ios: false
+  android: true
+  image_path: "graphics/launcher/icon.png"
+  adaptive_icon_background: "graphics/launcher/background.png"
+  adaptive_icon_foreground: "graphics/launcher/foreground.png"
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
