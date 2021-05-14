@@ -1,5 +1,6 @@
 import 'dart:math';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:provider/provider.dart';
@@ -82,42 +83,49 @@ class ParticipantBubbles extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final AppData appData = context.read<AppData>();
+    final CollectionReference participants =
+        appData.session.docRef.collection('participants');
 
-    return Consumer<AppData>(builder: (context, appData, _) {
-      if (appData.session == null) return CircularProgressIndicator();
+    return StreamBuilder<QuerySnapshot>(
+        stream: participants.snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (!snapshot.hasData) return SizedBox.shrink();
 
-      return Padding(
-        padding: EdgeInsets.symmetric(horizontal: 30),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            for (int i = 0; i < min(5, appData.session.participantCount); i++)
-              Padding(
-                padding: EdgeInsets.only(right: 10),
-                child: Material(
-                  shape: CircleBorder(),
-                  color: theme.colorScheme.onPrimary,
-                  child: Container(
-                    height: 50,
-                    width: 50,
-                    child: Center(
-                      child: Text(
-                        i == 0
-                            ? 'You'
-                            : (appData.session.participantCount > 5 && i == 5
-                                ? '...'
-                                : 'P${i + 1}'),
-                        style: theme.textTheme.headline6
-                            .copyWith(color: theme.colorScheme.primaryVariant),
+          final int participantCount = snapshot.data.size;
+
+          return Padding(
+            padding: EdgeInsets.symmetric(horizontal: 30),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                for (int i = 0; i < min(5, participantCount); i++)
+                  Padding(
+                    padding: EdgeInsets.only(right: 10),
+                    child: Material(
+                      shape: CircleBorder(),
+                      color: theme.colorScheme.onPrimary,
+                      child: Container(
+                        height: 50,
+                        width: 50,
+                        child: Center(
+                          child: Text(
+                            i == 0
+                                ? 'You'
+                                : (participantCount > 5 && i == 5
+                                    ? '...'
+                                    : 'P${i + 1}'),
+                            style: theme.textTheme.headline6.copyWith(
+                                color: theme.colorScheme.primaryVariant),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              )
-          ],
-        ),
-      );
-    });
+                  )
+              ],
+            ),
+          );
+        });
   }
 }
 

@@ -7,6 +7,9 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class PlacemapUtils {
   static DeviceInfoPlugin _deviceInfoPlugin = DeviceInfoPlugin();
+  static String _deviceId = 'device-' + DateTime.now().millisecondsSinceEpoch.toString();
+
+  static String get cachedDeviceId => _deviceId;
 
   static FlutterLocalNotificationsPlugin notifications =
       FlutterLocalNotificationsPlugin();
@@ -63,10 +66,15 @@ class PlacemapUtils {
   }
 
   static Future<String> currentDeviceId() async {
+    if (_deviceId != null && !_deviceId.startsWith('device'))
+      return _deviceId;
+
     if (Platform.isAndroid) {
-      return (await _deviceInfoPlugin.androidInfo).id;
+      _deviceId = (await _deviceInfoPlugin.androidInfo).id;
+      return _deviceId;
     } else if (Platform.isIOS) {
-      return (await _deviceInfoPlugin.iosInfo).identifierForVendor;
+      _deviceId = (await _deviceInfoPlugin.iosInfo).identifierForVendor;
+      return _deviceId;
     }
 
     return null;

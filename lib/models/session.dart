@@ -10,9 +10,6 @@ class Session extends ChangeNotifier {
   SessionState _state;
   DocumentReference _tradRef;
   DocumentReference _tradReviewRef;
-  String recallImg;
-  String recallMsg;
-  final List<Participant> _participants;
   final DocumentReference docRef;
 
   Session.fromSnapshot(DocumentSnapshot doc)
@@ -21,31 +18,20 @@ class Session extends ChangeNotifier {
   Session.fromMap(Map<String, dynamic> map, {this.docRef})
       : assert(map['id'] != null),
         assert(map['state'] != null),
-        assert(map['participants'] != null),
         id = map['id'],
         _state = SessionState.values
             .firstWhere((state) => (state.toString() == map['state'])),
         _tradRef = map['tradRef'],
-        _tradReviewRef = map['tradReviewRef'],
-        recallImg = map['recallImg'],
-        recallMsg = map['recallMsg'],
-        _participants = (map['participants'] as List<dynamic>)
-            .map((participant) =>
-                Participant.fromMap(PlacemapUtils.toMap(participant)))
-            .toList();
+        _tradReviewRef = map['tradReviewRef'];
 
   Map<String, dynamic> get map => {
         'id': id,
         'state': _state.toString(),
         'tradRef': _tradRef ?? null,
-        'tradReviewRef': _tradReviewRef ?? null,
-        'recallImg': recallImg,
-        'recallMsg': recallMsg,
-        'participants':
-            _participants.map((participant) => participant.map).toList()
+        'tradReviewRef': _tradReviewRef ?? null
       };
 
-  Session.initialize(this.id, this._participants)
+  Session.initialize(this.id)
       : _state = SessionState.waiting,
         docRef = FirebaseFirestore.instance.collection('sessions').doc(id);
 
@@ -56,83 +42,32 @@ class Session extends ChangeNotifier {
     if (refresh) update();
   }
 
-  Participant getParticipant(String deviceId) => _participants.firstWhere(
-      (participant) => participant.deviceId == deviceId,
-      orElse: () => null);
+  Future<Participant> getParticipant(String deviceId) async {
+    final participantDoc =
+        await docRef.collection('participants').doc(deviceId).get();
+    if (!participantDoc.exists) return null;
+
+    return Participant.fromSnapshot(participantDoc, this.docRef);
+  }
 
   Future<Participant> getSelf() async {
     final String deviceId = await PlacemapUtils.currentDeviceId();
-
-    return _participants.firstWhere(
-        (participant) => participant.deviceId == deviceId,
-        orElse: () => null);
+    return getParticipant(deviceId);
   }
 
   Future<void> addSelf() async {
     final String deviceId = await PlacemapUtils.currentDeviceId();
 
-    if (_participants.firstWhere(
-            (participant) => participant.deviceId == deviceId,
-            orElse: () => null) !=
-        null) return;
+    if (await getSelf() != null) return;
 
-    final participant = Participant.initialize(deviceId);
-
-    _participants.add(participant);
-    return update();
+    final participant = Participant.initialize(deviceId, this.docRef);
+    participant.update();
   }
 
   Future<void> removeSelf() async {
     final self = await getSelf();
-    _participants.remove(self);
-    return update();
+    return self.docRef.delete();
   }
-
-  Future<void> setSelfTutorial(bool complete) async {
-    final self = await getSelf();
-    self.tutorialComplete = complete;
-    return update();
-  }
-
-  Future<void> setSelfQuit(bool quit) async {
-    final self = await getSelf();
-    self.quit = quit;
-    return update();
-  }
-
-  Future<void> setSelCamera(bool camera) async {
-    final self = await getSelf();
-    self.camera = camera;
-    return update();
-  }
-
-  Future<void> setSelfDistracted(bool distracted) async {
-    final self = await getSelf();
-    self.distracted = distracted;
-    return update();
-  }
-
-  bool ready() {
-    return _participants.firstWhere(
-            (participant) => !participant.tutorialComplete,
-            orElse: () => null) ==
-        null;
-  }
-
-  bool allQuit() {
-    return _participants.firstWhere(
-            (participant) => !participant.quit && !participant.distracted,
-            orElse: () => null) ==
-        null;
-  }
-
-  int distractedCount() {
-    return _participants
-        .where((participant) => participant.distracted && !participant.camera)
-        .length;
-  }
-
-  int get participantCount => _participants.length;
 
   DocumentReference get tradRef => _tradRef;
 

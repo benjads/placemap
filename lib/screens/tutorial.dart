@@ -1,4 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:placemap/models/participant.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/models/tradition.dart';
 import 'package:placemap/utils.dart';
@@ -29,13 +31,19 @@ class TutorialScreen extends StatelessWidget {
         nextText = null,
         child = null;
 
+  Future<void> markComplete(AppData appData) async {
+    final Participant self = await appData.session.getSelf();
+    self.tutorialComplete = true;
+    self.update();
+  }
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     if (next == null) {
       final appData = context.read<AppData>();
-      appData.session.setSelfTutorial(true);
+      markComplete(appData);
 
       return ActivityWrapper(
         child: IntroScreen(
@@ -81,25 +89,37 @@ class FinishButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final AppData appData = context.read<AppData>();
+    final CollectionReference participants =
+        appData.session.docRef.collection('participants');
 
-    return Consumer<AppData>(
-      builder: (context, appData, _) {
-        if (appData.session.ready()) {
-          return PlacemapButton(
-              onPressed: () async {
-                appData.session.tradRef =
-                    (await Tradition.random(appData)).docRef;
-                appData.session.setState(SessionState.trad, true);
-              },
-              text: "Let's Go!");
-        } else {
-          return Text(
-            'Please wait for others to finish the tutorial...',
-            style: theme.textTheme.bodyText1,
-          );
-        }
-      },
-    );
+    return StreamBuilder<QuerySnapshot>(
+        stream: participants.snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (!snapshot.hasData) return SizedBox.shrink();
+
+          final bool allReady = snapshot.data.docs.firstWhere(
+                  (doc) =>
+                      !Participant.fromSnapshot(doc, appData.session.docRef)
+                          .tutorialComplete,
+                  orElse: () => null) ==
+              null;
+
+          if (allReady) {
+            return PlacemapButton(
+                onPressed: () async {
+                  appData.session.tradRef =
+                      (await Tradition.random(appData)).docRef;
+                  appData.session.setState(SessionState.trad, true);
+                },
+                text: "Let's Go!");
+          } else {
+            return Text(
+              'Please wait for others to finish the tutorial...',
+              style: theme.textTheme.bodyText1,
+            );
+          }
+        });
   }
 }
 
@@ -219,7 +239,8 @@ class Tutorial5 extends StatelessWidget {
       },
       nextText: "Okay",
       child: Container(
-        padding: const EdgeInsets.only(top: 180, right: 50, bottom: 0, left: 50),
+        padding:
+            const EdgeInsets.only(top: 180, right: 50, bottom: 0, left: 50),
         child: Text(
           desc,
           style: theme.textTheme.headline5,

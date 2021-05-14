@@ -137,7 +137,7 @@ class Tradition {
           .toList();
     }
 
-    final seed = appData.session.participantCount * reviews.length;
+    final seed = appData.session.id.codeUnitAt(0) * reviews.length;
     final rng = Random(seed);
 
     final List<Tradition> results = List<Tradition>();

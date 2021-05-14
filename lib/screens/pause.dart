@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
+import 'package:placemap/models/participant.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
 import 'package:placemap/screens/common.dart';
@@ -8,6 +9,14 @@ import 'package:provider/provider.dart';
 
 class PauseScreen extends StatelessWidget {
   static const readyMsg = 'Are you ready to learn a new play-food tradition?';
+
+  Future<void> quit(BuildContext context) async {
+    final AppData appData = context.read<AppData>();
+    final Participant self = await appData.session.getSelf();
+    self.quit = true;
+    await self.update();
+    Navigator.popAndPushNamed(context, '/exit');
+}
 
   @override
   Widget build(BuildContext context) {
@@ -42,11 +51,7 @@ class PauseScreen extends StatelessWidget {
                   text: 'Get a Tradition'),
               DividerText(text: 'or'),
               PlacemapButton(
-                  onPressed: () {
-                    final AppData appData = context.read<AppData>();
-                    appData.session.setSelfQuit(true);
-                    Navigator.popAndPushNamed(context, '/exit');
-                  },
+                  onPressed: () => quit(context),
                   text: 'End the Meal'),
             ],
           ),

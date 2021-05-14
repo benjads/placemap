@@ -3,7 +3,6 @@ import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:placemap/models/participant.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/models/tradition.dart';
 import 'package:placemap/models/tradition_review.dart';
@@ -19,7 +18,6 @@ class AppData extends ChangeNotifier {
   bool dirtyScreen = false;
   bool routeChange = false;
   bool _recallAck = false;
-  bool _selfDistracted = false;
 
   bool _demoDecrease = false;
   bool _demoRecallMenu = false;
@@ -35,18 +33,12 @@ class AppData extends ChangeNotifier {
   Tradition get tradition => _tradition;
   TraditionReview get review => _review;
   bool get recallAck => _recallAck;
-  bool get selfDistracted => _selfDistracted;
   bool get demoRecallPopup => _demoRecallPopup;
   bool get demoRecallMenu => _demoRecallMenu;
   bool get demoDecrease => _demoDecrease;
 
-  set recallAck(bool acknowledged) {
-    _recallAck = acknowledged;
-    notifyListeners();
-  }
-
-  set selfDistracted(bool distracted) {
-    _selfDistracted = distracted;
+  set recallAck(bool value) {
+    _recallAck = value;
     notifyListeners();
   }
 
@@ -73,13 +65,13 @@ class AppData extends ChangeNotifier {
             .get())
         .exists) _sessionId = PlacemapUtils.getSessionCode();
 
-    final participant =
-        Participant.initialize(await PlacemapUtils.currentDeviceId());
-    _session = Session.initialize(_sessionId, [participant]);
+
+    _session = Session.initialize(_sessionId);
     await _session.update();
 
     await setSessionId(_sessionId);
     _host = true;
+    await _session.addSelf();
     notifyListeners();
 
     return _session;
@@ -144,15 +136,6 @@ class AppData extends ChangeNotifier {
     if (oldState != null && (_session.state != oldState || routeChange)) {
       dirtyScreen = true;
       routeChange = false;
-    }
-
-    if (_session.distractedCount() > 0) {
-      final self = await _session.getSelf();
-      if (self.distracted && _session.recallMsg != null) {
-        PlacemapUtils.showNotification('Hey, come back!', _session.recallMsg);
-      }
-    } else {
-      recallAck = false;
     }
 
     notifyListeners();

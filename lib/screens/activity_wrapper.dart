@@ -1,11 +1,14 @@
+import 'dart:async';
 import 'dart:developer';
 import 'dart:io';
 import 'dart:math' show Random;
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/session.dart';
+import 'package:placemap/models/participant.dart';
 import 'package:placemap/screens/common.dart';
 import 'package:placemap/speech_service.dart';
 import 'package:placemap/utils.dart';
@@ -26,6 +29,7 @@ class _ActivityWrapperState extends State<ActivityWrapper>
     with WidgetsBindingObserver {
   AppLifecycleState _currentState;
   AppData appData;
+  StreamSubscription<DocumentSnapshot> selfStream;
 
   @override
   void initState() {
@@ -44,38 +48,38 @@ class _ActivityWrapperState extends State<ActivityWrapper>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     super.didChangeAppLifecycleState(state);
 
-    if (appData.session.state == SessionState.tutorial)
-      return;
+    if (appData.session.state == SessionState.tutorial) return;
 
     if (state != _currentState) {
       _currentState = state;
-
-      if (state == AppLifecycleState.paused) {
-        appData.session.setSelfDistracted(true);
-        appData.selfDistracted = true;
-      } else if (state == AppLifecycleState.resumed) {
-        appData.session.setSelfDistracted(false);
-        appData.session.setSelCamera(false);
-        PlacemapUtils.cancelNotification();
-      }
+      appData.session.getSelf().then((self) {
+        if (state == AppLifecycleState.paused) {
+          self.distracted = true;
+          if (selfStream == null) {
+            selfStream = self.docRef.snapshots().listen((doc) {
+              log('Background participant update received');
+              final Participant participant = Participant.fromSnapshot(doc, appData.session.docRef);
+              if (participant.distracted && participant.recallMsg != null) {
+                log('Sending push notification');
+                PlacemapUtils.showNotification(
+                    'Hey, come back!', self.recallMsg);
+              }
+            });
+          }
+        } else if (state == AppLifecycleState.resumed) {
+          self.distracted = false;
+          self.camera = false;
+          selfStream?.cancel();
+          selfStream = null;
+          PlacemapUtils.cancelNotification();
+        }
+        self.update();
+      });
     }
-  }
-
-  void closePopup() {
-    appData.selfDistracted = false;
-
-    if (appData.session.distractedCount() == 0) {
-      appData.session.recallImg = null;
-      appData.session.recallMsg = null;
-    }
-
-    appData.session.update();
   }
 
   @override
   Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-
     return Consumer<AppData>(
       builder: (context, appData, child) {
         if (appData.dirtyScreen) {
@@ -94,58 +98,103 @@ class _ActivityWrapperState extends State<ActivityWrapper>
           alignment: Alignment.topCenter,
           children: [
             Positioned.fill(child: child),
-            (appData.session.distractedCount() > 0 && !appData.recallAck) || appData.demoRecallMenu
-                ? RecallMenu()
-                : Positioned(
-                    top: 40,
-                    left: 20,
-                    child: Material(
-                      shape: CircleBorder(),
-                      color: appData.demoDecrease ? theme.colorScheme.error : theme.colorScheme.primaryVariant,
-                      child: Container(
-                        height: 50,
-                        width: 50,
-                        child: Center(
-                          child: Text(
-                            (appData.session.participantCount -
-                                    appData.session.distractedCount() - (appData.demoDecrease ? 1 : 0))
-                                .toString(),
-                            style: theme.textTheme.headline4
-                                .copyWith(color: Colors.white, height: 1.5),
-                            textAlign: TextAlign.center,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-            if ((appData.selfDistracted &&
-                appData.session.recallImg != null &&
-                appData.session.recallMsg != null) || appData.demoRecallPopup)
-              RecallPopup(closePopup),
-            if (Platform.isAndroid)
-              Positioned(
-                  bottom: 60,
-                  right: 20,
-                  child: GestureDetector(
-                    onTap: () {
-                      appData.session.setSelCamera(true);
-                      PlacemapUtils.openCamera();
-                    },
-                    child: Material(
-                        shape: CircleBorder(),
-                        color: theme.colorScheme.secondary.withOpacity(0.5),
-                        child: Container(
-                            height: 50,
-                            width: 50,
-                            child: Center(
-                                child: Icon(Icons.camera_alt,
-                                    color: Colors.white)))),
-                  ))
+            ParticipantBubble(),
           ],
         );
       },
       child: widget.child,
     );
+  }
+}
+
+class ParticipantBubble extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final AppData appData = context.watch<AppData>();
+    final CollectionReference participants =
+        appData.session.docRef.collection('participants');
+
+    return StreamBuilder<QuerySnapshot>(
+        stream: participants.snapshots(),
+        builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
+          if (!snapshot.hasData) return SizedBox.shrink();
+          log('Updated participant data received from the remote');
+
+          final data = snapshot.data;
+          final int participantCount = data.size;
+          final List<Participant> distracted = [];
+          Participant self;
+
+          data.docs.forEach((doc) {
+            final Participant participant =
+                Participant.fromSnapshot(doc, appData.session.docRef);
+            if (participant.deviceId == PlacemapUtils.cachedDeviceId)
+              self = participant;
+
+            if (participant.distracted && !participant.camera ||
+                participant.recallMsg != null) distracted.add(participant);
+          });
+
+          if (distracted.length == 0 && appData.recallAck) Future.microtask(() => appData.recallAck = false);
+
+          return Stack(
+            alignment: Alignment.topCenter,
+            children: [
+              (distracted.length > 0 && !appData.recallAck) ||
+                      appData.demoRecallMenu
+                  ? RecallMenu(participantCount, distracted)
+                  : Positioned(
+                      top: 40,
+                      left: 20,
+                      child: Material(
+                        shape: CircleBorder(),
+                        color: appData.demoDecrease
+                            ? theme.colorScheme.error
+                            : theme.colorScheme.primaryVariant,
+                        child: Container(
+                          height: 50,
+                          width: 50,
+                          child: Center(
+                            child: Text(
+                              (participantCount -
+                                      distracted.length -
+                                      (appData.demoDecrease ? 1 : 0))
+                                  .toString(),
+                              style: theme.textTheme.headline4
+                                  .copyWith(color: Colors.white, height: 1.5),
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+              if ((self.recallImg != null && self.recallMsg != null) ||
+                  appData.demoRecallPopup)
+                RecallPopup(self),
+              if (Platform.isAndroid)
+                Positioned(
+                    bottom: 60,
+                    right: 20,
+                    child: GestureDetector(
+                      onTap: () {
+                        self.camera = true;
+                        self.update();
+                        PlacemapUtils.openCamera();
+                      },
+                      child: Material(
+                          shape: CircleBorder(),
+                          color: theme.colorScheme.secondary.withOpacity(0.5),
+                          child: Container(
+                              height: 50,
+                              width: 50,
+                              child: Center(
+                                  child: Icon(Icons.camera_alt,
+                                      color: Colors.white)))),
+                    ))
+            ],
+          );
+        });
   }
 }
 
@@ -159,11 +208,18 @@ class RecallMenu extends StatelessWidget {
         "Dining table calling the moon. Anyone out there?"
   ];
 
+  final int participantCount;
+  final List<Participant> distracted;
+
+  RecallMenu(this.participantCount, this.distracted);
+
   void sendMessage(AppData appData) {
     final Random rng = Random();
-    appData.session.recallImg = 'graphics/recall/meme${rng.nextInt(12) + 1}.jpeg';
-    appData.session.recallMsg = messages[rng.nextInt(messages.length)];
-    appData.session.update();
+    distracted.forEach((participant) {
+      participant.recallImg = 'graphics/recall/meme${rng.nextInt(12) + 1}.jpeg';
+      participant.recallMsg = messages[rng.nextInt(messages.length)];
+      participant.update();
+    });
   }
 
   @override
@@ -189,9 +245,7 @@ class RecallMenu extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                (appData.session.participantCount -
-                        appData.session.distractedCount())
-                    .toString(),
+                (participantCount - distracted.length).toString(),
                 style: theme.textTheme.headline4
                     .copyWith(color: Colors.white, height: 1.5),
                 textAlign: TextAlign.center,
@@ -214,8 +268,7 @@ class RecallMenu extends StatelessWidget {
                       SizedBox(height: 10),
                       PlacemapButton(
                         onPressed: () {
-                          if (appData.demoRecallMenu)
-                            return;
+                          if (appData.demoRecallMenu) return;
 
                           appData.recallAck = true;
                         },
@@ -226,8 +279,7 @@ class RecallMenu extends StatelessWidget {
                       SizedBox(height: 10),
                       PlacemapButton(
                         onPressed: () {
-                          if (appData.demoRecallMenu)
-                            return;
+                          if (appData.demoRecallMenu) return;
 
                           sendMessage(appData);
                           appData.recallAck = true;
@@ -247,11 +299,18 @@ class RecallMenu extends StatelessWidget {
 }
 
 class RecallPopup extends StatelessWidget {
-  static const demoRecall = "Hey! Shouldn't you get back to your shared mealtime experience?";
+  static const demoRecall =
+      "Hey! Shouldn't you get back to your shared mealtime experience?";
 
-  final VoidCallback closePopup;
+  final Participant self;
 
-  RecallPopup(this.closePopup);
+  RecallPopup(this.self);
+
+  void closePopup(AppData appData, Participant self) {
+    self.recallImg = null;
+    self.recallMsg = null;
+    self.update();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -283,7 +342,7 @@ class RecallPopup extends StatelessWidget {
                 if (!appData.demoRecallPopup)
                   Material(
                     child: IconButton(
-                        onPressed: closePopup,
+                        onPressed: () => closePopup(appData, self),
                         icon: Icon(
                           Icons.close,
                           color: Colors.white,
@@ -295,10 +354,12 @@ class RecallPopup extends StatelessWidget {
             SizedBox(height: 20),
             SizedBox(
               height: 150,
-              child: Image(image: AssetImage(appData.session.recallImg ?? 'graphics/recall/meme1.jpeg')),
+              child: Image(
+                  image: AssetImage(
+                      self.recallImg ?? 'graphics/recall/meme1.jpeg')),
             ),
             SizedBox(height: 20),
-            Text(appData.session.recallMsg ?? demoRecall,
+            Text(self.recallMsg ?? demoRecall,
                 style: theme.textTheme.bodyText1.copyWith(color: Colors.white)),
           ],
         ),
