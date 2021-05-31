@@ -1,4 +1,5 @@
-import 'dart:math';
+import 'dart:developer';
+import 'dart:math' show Random;
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
@@ -16,6 +17,7 @@ class Tradition {
   final String ttsDesc;
   final String fullDesc;
   final String videoUri;
+  String _cachedVideoUrl;
   final List<String> photos;
   Map<String, Image> _cachedPhotos;
   final List<String> keywords;
@@ -57,13 +59,15 @@ class Tradition {
         allowedFirst = map['allowedFirst'];
 
   Future<void> cacheImages(BuildContext context, bool includePhotos) async {
-    _cachedCoverUrl = await FirebaseStorage.instance
-        .ref('traditions/$coverImg')
-        .getDownloadURL();
-    _cachedCoverImg = Image.network(_cachedCoverUrl);
-    await precacheImage(_cachedCoverImg.image, context);
+    if (_cachedCoverImg == null) {
+      _cachedCoverUrl = await FirebaseStorage.instance
+          .ref('traditions/$coverImg')
+          .getDownloadURL();
+      _cachedCoverImg = Image.network(_cachedCoverUrl);
+      await precacheImage(_cachedCoverImg.image, context);
+    }
 
-    if (photos != null && includePhotos) {
+    if (photos != null && includePhotos && _cachedPhotos == null) {
       _cachedPhotos = Map<String, Image>();
       photos.forEach((photo) async {
         var photoUrl = await FirebaseStorage.instance
@@ -74,10 +78,16 @@ class Tradition {
         await precacheImage(photoImg.image, context);
       });
     }
+
+    if (videoUri != null && _cachedVideoUrl == null) {
+      _cachedVideoUrl = await FirebaseStorage.instance.ref('videos/$videoUri').getDownloadURL();
+    }
   }
 
 
   String get cachedCoverUrl => _cachedCoverUrl;
+
+  String get cachedVideoUrl => _cachedVideoUrl;
 
   Image get cachedCoverImg => _cachedCoverImg;
 
@@ -122,13 +132,19 @@ class Tradition {
   static Future<List<Tradition>> randomList(
       AppData appData, int count, String keyword) async {
     List<Tradition> traditions = await allTraditions();
+    log('Starting with ${traditions.length} traditions');
 
     final List<TraditionReview> reviews =
         await TraditionReview.allReviews(appData.session);
-    reviews.forEach((review) => traditions.remove(
-        traditions.where((tradition) => tradition.docRef == review.tradRef)));
+    log('Loaded ${reviews.length} reviews');
+    reviews.forEach((review) {
+      final Tradition tradition = traditions.firstWhere((tradition) => tradition.docRef == review.tradRef);
+      traditions.remove(tradition);
+    });
+    log('After removing prior reviews, left with ${traditions.length} traditions');
 
     traditions.remove(traditions.firstWhere((tradition) => tradition == appData.tradition, orElse: () => null));
+    log('After removing just prior, left with ${traditions.length} traditions');
 
     final List<Tradition> traditionsAlt = List.of(traditions);
     if (keyword != null) {
@@ -136,6 +152,7 @@ class Tradition {
           .where((tradition) => tradition.keywords.contains(keyword))
           .toList();
     }
+    log('After keyword, left with ${traditions.length} traditions');
 
     final seed = appData.session.id.codeUnitAt(0) * reviews.length;
     final rng = Random(seed);
@@ -147,13 +164,17 @@ class Tradition {
       var tradition = traditions[idx];
       results.add(tradition);
       traditions.remove(tradition);
+      traditionsAlt.remove(tradition);
+      log('Adding regular tradition ${tradition.name}');
     }
 
     while (results.length < count && traditionsAlt.isNotEmpty) {
       var idx = rng.nextInt(traditionsAlt.length);
       var tradition = traditionsAlt[idx];
       results.add(tradition);
+      traditions.remove(tradition);
       traditionsAlt.remove(tradition);
+      log('Adding alternate tradition ${tradition.name}');
     }
 
     return results;

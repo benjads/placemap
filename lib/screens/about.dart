@@ -14,20 +14,31 @@ class AboutScreen extends StatelessWidget {
     return IntroScreen(
       showTitle: true,
       footer: null,
-      content: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(horizontal: 30),
-            child: Text(
-              desc,
-              style: theme.textTheme.bodyText1.copyWith(fontSize: 20, height: 1.25),
-              textAlign: TextAlign.left,
+      footerPadding: false,
+      content: Padding(
+        padding: EdgeInsets.only(bottom: 170),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Container(
+                padding: EdgeInsets.symmetric(horizontal: 30),
+                child: ListView(
+                  children: [
+                    Text(
+                      desc,
+                      style: theme.textTheme.bodyText1
+                          .copyWith(fontSize: 20, height: 1.25),
+                      textAlign: TextAlign.left,
+                    )
+                  ],
+                ),
+              ),
             ),
-          ),
-          SizedBox(height: 50),
-          PlacemapButton(onPressed: () => Navigator.pop(context), text: 'Back'),
-        ],
+            SizedBox(height: 20),
+            PlacemapButton(onPressed: () => Navigator.pop(context), text: 'Back'),
+          ],
+        ),
       ),
     );
   }

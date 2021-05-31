@@ -8,6 +8,7 @@ import 'package:placemap/models/tradition_review.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
 import 'package:placemap/screens/common.dart';
 import 'package:placemap/screens/intro.dart';
+import 'package:placemap/utils.dart';
 import 'package:provider/provider.dart';
 
 class ReviewScreen extends StatefulWidget {
@@ -17,6 +18,13 @@ class ReviewScreen extends StatefulWidget {
 
 class _ReviewScreenState extends State<ReviewScreen> {
   bool _results = false;
+  bool _loading = false;
+
+  void setLoading(bool loading) {
+    setState(() {
+      _loading = loading;
+    });
+  }
 
   void submitVote() {
     setState(() {
@@ -31,7 +39,10 @@ class _ReviewScreenState extends State<ReviewScreen> {
         showTitle: false,
         simpleLogo: true,
         footer: SizedBox.shrink(),
-        content: _results ? ReviewResultsView() : ReviewSelectView(submitVote),
+        loading: _loading,
+        content: _results
+            ? ReviewResultsView(setLoading)
+            : ReviewSelectView(submitVote),
       ),
     );
   }
@@ -71,13 +82,19 @@ class ReviewSelectView extends StatelessWidget {
 }
 
 class ReviewResultsView extends StatelessWidget {
-  
-  void _home(BuildContext context) {
-    final AppData appData = context.read<AppData>();
-    appData.session.setState(SessionState.pause, true);
-    Navigator.popAndPushNamed(context, '/pause');
+  final Function setLoading;
+
+  ReviewResultsView(this.setLoading);
+
+  Future<void> _home(BuildContext context) async {
+    setLoading(true);
+    PlacemapUtils.firestoreOp(Scaffold.of(context).widget.key, () async {
+      final AppData appData = context.read<AppData>();
+      appData.session.setState(SessionState.pause);
+      await appData.session.update();
+    }, () => Navigator.popAndPushNamed(context, '/pause'));
   }
-  
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -89,12 +106,13 @@ class ReviewResultsView extends StatelessWidget {
         children: [
           Text(
             "HERE'S HOW THE REST OF THE GROUP LIKED IT. "
-                "DO YOU AGREE?",
+            "DO YOU AGREE?",
             style: theme.textTheme.headline6,
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 10),
-          PlacemapButton(onPressed: () => _home(context), text: 'BACK TO SEARCH'),
+          PlacemapButton(
+              onPressed: () => _home(context), text: 'BACK TO SEARCH'),
           SizedBox(height: 20),
           ReviewResultsInner(),
         ],
@@ -131,8 +149,7 @@ class _ReviewResultsInnerState extends State<ReviewResultsInner> {
   }
 
   int count(int rating) {
-    if (_review == null)
-      return 0;
+    if (_review == null) return 0;
 
     return _review.ratingsMap()[rating];
   }
@@ -224,13 +241,13 @@ class RatingBar extends StatelessWidget {
               width: 150,
               decoration: BoxDecoration(
                   gradient: LinearGradient(
-                    begin: Alignment.topCenter,
-                    end: Alignment.bottomCenter,
-                    colors: [
-                      Colors.white.withOpacity(0.2),
-                      Colors.white.withOpacity(0.6),
-                    ],
-                  )),
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.white.withOpacity(0.2),
+                  Colors.white.withOpacity(0.6),
+                ],
+              )),
             ),
           ],
         ),

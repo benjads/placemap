@@ -10,7 +10,7 @@ import 'package:placemap/screens/activity_wrapper.dart';
 import 'package:placemap/screens/common.dart';
 import 'package:placemap/screens/intro.dart';
 
-class TutorialScreen extends StatelessWidget {
+class TutorialScreen extends StatefulWidget {
   static final finalDesc =
       "With that, you're all set! We hope you enjoy a mealtime full of fun and cultural surprises.";
 
@@ -31,6 +31,19 @@ class TutorialScreen extends StatelessWidget {
         nextText = null,
         child = null;
 
+  @override
+  _TutorialScreenState createState() => _TutorialScreenState();
+}
+
+class _TutorialScreenState extends State<TutorialScreen> {
+  bool _loading = false;
+
+  void setLoading(bool loading) {
+    setState(() {
+      _loading = loading;
+    });
+  }
+
   Future<void> markComplete(AppData appData) async {
     final Participant self = await appData.session.getSelf();
     self.tutorialComplete = true;
@@ -41,24 +54,25 @@ class TutorialScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
-    if (next == null) {
+    if (widget.next == null) {
       final appData = context.read<AppData>();
       markComplete(appData);
 
       return ActivityWrapper(
         child: IntroScreen(
           showTitle: false,
+          loading: _loading,
           content: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 50),
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  finalDesc,
+                  TutorialScreen.finalDesc,
                   style: theme.textTheme.headline5,
                 ),
                 SizedBox(height: 15),
-                FinishButton(),
+                FinishButton(setLoading),
               ],
             ),
           ),
@@ -73,19 +87,23 @@ class TutorialScreen extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 20),
           child: PlacemapButton(
             onPressed: () {
-              nextFunction?.call();
-              Navigator.popAndPushNamed(context, next);
+              widget.nextFunction?.call();
+              Navigator.popAndPushNamed(context, widget.next);
             },
-            text: nextText,
+            text: widget.nextText,
           ),
         ),
-        content: child,
+        content: widget.child,
       ),
     );
   }
 }
 
 class FinishButton extends StatelessWidget {
+  final Function setLoading;
+
+  FinishButton(this.setLoading);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -107,10 +125,15 @@ class FinishButton extends StatelessWidget {
 
           if (allReady) {
             return PlacemapButton(
-                onPressed: () async {
-                  appData.session.tradRef =
-                      (await Tradition.random(appData)).docRef;
-                  appData.session.setState(SessionState.trad, true);
+                onPressed: () {
+                  setLoading(true);
+                  PlacemapUtils.firestoreOp(Scaffold.of(context).widget.key,
+                      () async {
+                    appData.session.tradRef =
+                        (await Tradition.random(appData)).docRef;
+                    appData.session.setState(SessionState.trad);
+                    await appData.session.update();
+                  }, null);
                 },
                 text: "Let's Go!");
           } else {
@@ -125,7 +148,7 @@ class FinishButton extends StatelessWidget {
 
 class Tutorial1 extends StatelessWidget {
   static final desc =
-      "Before we begin, we'd like to proposal a social pact: can you commit to keeping this app open throughout the meal and therefore not use your phone for other purposes?";
+      "Before we begin, we'd like to propose a social pact: can you commit to keeping this app open throughout the meal and therefore not use your phone for other purposes?";
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +170,7 @@ class Tutorial1 extends StatelessWidget {
 
 class Tutorial2 extends StatelessWidget {
   static final desc =
-      "You'll notice the circle on the top left of the screen. It signals the amount of active players; that is, the amount of players that have the Placemap app open and that, as such, are not using their phones for other purposes.";
+      "You'll notice the circle on the top left of the screen. It signals the amount of active players; that is, the amount of players that have the PlaceMap app open and that, as such, are not using their phones for other purposes.";
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +204,6 @@ class Tutorial3 extends StatelessWidget {
     return TutorialScreen(
       next: '/tutorial/4',
       nextFunction: () {
-        appData.demoDecrease = false;
         appData.demoRecallMenu = true;
       },
       nextText: "I See",
@@ -198,7 +220,7 @@ class Tutorial3 extends StatelessWidget {
 
 class Tutorial4 extends StatelessWidget {
   static final desc =
-      "When that happens, you can click on the circle. A pop-up will open, giving you an opportunity to persuade that person to return to the experience.";
+      "When that happens, a pop-up will open, giving you an opportunity to persuade that person to return to the experience.";
 
   @override
   Widget build(BuildContext context) {
@@ -209,11 +231,12 @@ class Tutorial4 extends StatelessWidget {
       next: '/tutorial/5',
       nextFunction: () {
         appData.demoRecallMenu = false;
+        appData.demoDecrease = false;
         appData.demoRecallPopup = true;
       },
       nextText: "Got It",
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 50),
+        padding: const EdgeInsets.only(right: 50, left: 50, top: 50),
         child: Text(
           desc,
           style: theme.textTheme.headline5,
@@ -240,7 +263,29 @@ class Tutorial5 extends StatelessWidget {
       nextText: "Okay",
       child: Container(
         padding:
-            const EdgeInsets.only(top: 180, right: 50, bottom: 0, left: 50),
+            const EdgeInsets.only(top: 200, right: 50, bottom: 0, left: 50),
+        child: Text(
+          desc,
+          style: theme.textTheme.headline6,
+        ),
+      ),
+    );
+  }
+}
+
+class Tutorial6 extends StatelessWidget {
+  static final desc =
+      "This activity involves sound, so please turn your device's volume up. If at any point you'd like to mute yourself, tap the speaker icon on the top-right of the screen.";
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return TutorialScreen(
+      next: '/tutorial/7',
+      nextText: "Okay",
+      child:  Padding(
+        padding: const EdgeInsets.only(right: 50, left: 50, top: 50),
         child: Text(
           desc,
           style: theme.textTheme.headline5,
@@ -250,7 +295,7 @@ class Tutorial5 extends StatelessWidget {
   }
 }
 
-class Tutorial6 extends StatelessWidget {
+class Tutorial7 extends StatelessWidget {
   static final desc =
       "So before we start playing with our collection of playful food traditions from allover the world, we need you to allow PlaceMap to send your push notifications.";
 

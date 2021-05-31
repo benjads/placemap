@@ -1,12 +1,16 @@
 import 'dart:developer';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/participant.dart';
 import 'package:placemap/utils.dart';
 
 class Session extends ChangeNotifier {
   final String id;
+  Timestamp _created;
+  Timestamp _ended;
+  final bool prod;
   SessionState _state;
   DocumentReference _tradRef;
   DocumentReference _tradReviewRef;
@@ -17,8 +21,13 @@ class Session extends ChangeNotifier {
 
   Session.fromMap(Map<String, dynamic> map, {this.docRef})
       : assert(map['id'] != null),
+        assert(map['created'] != null),
+        assert(map['prod'] != null),
         assert(map['state'] != null),
         id = map['id'],
+        _created = map['created'],
+        _ended = map['ended'],
+        prod = map['prod'],
         _state = SessionState.values
             .firstWhere((state) => (state.toString() == map['state'])),
         _tradRef = map['tradRef'],
@@ -26,6 +35,9 @@ class Session extends ChangeNotifier {
 
   Map<String, dynamic> get map => {
         'id': id,
+        'created': _created,
+        'ended': _ended ?? null,
+        'prod': prod,
         'state': _state.toString(),
         'tradRef': _tradRef ?? null,
         'tradReviewRef': _tradReviewRef ?? null
@@ -33,13 +45,18 @@ class Session extends ChangeNotifier {
 
   Session.initialize(this.id)
       : _state = SessionState.waiting,
+        _created = Timestamp.now(),
+        prod = kReleaseMode,
         docRef = FirebaseFirestore.instance.collection('sessions').doc(id);
 
   SessionState get state => _state;
 
-  void setState(SessionState state, bool refresh) {
+  void setState(SessionState state) {
     _state = state;
-    if (refresh) update();
+  }
+
+  void setEndTime() {
+    _ended = Timestamp.now();
   }
 
   Future<Participant> getParticipant(String deviceId) async {
@@ -116,6 +133,8 @@ extension StateExtension on SessionState {
         return '/search';
       case SessionState.pause:
         return '/pause';
+      case SessionState.ended:
+        return '/exit';
       default:
         return '/';
     }

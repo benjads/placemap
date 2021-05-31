@@ -1,5 +1,8 @@
 import 'dart:io';
 import 'dart:math';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import 'package:device_info/device_info.dart';
@@ -84,4 +87,16 @@ class PlacemapUtils {
   static final Random _rnd = Random();
   static String getSessionCode() => String.fromCharCodes(Iterable.generate(
       5, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+
+  static Future<void> firestoreOp(GlobalKey<ScaffoldState> scaffoldKey, Future Function() op, VoidCallback onSuccess) async {
+    try {
+      await op.call();
+    } on FirebaseException {
+      scaffoldKey.currentState.showSnackBar(SnackBar(
+          content:
+          Text('Unable to connect! Is your device offline?')));
+      return;
+    }
+    onSuccess?.call();
+  }
 }

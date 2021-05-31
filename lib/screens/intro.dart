@@ -5,15 +5,19 @@ class IntroScreen extends StatelessWidget {
   final bool showTitle;
   final bool simpleLogo;
   final bool footerPadding;
+  final bool loading;
   final Widget footer;
+  final GlobalKey<ScaffoldState> scaffoldKey;
   final Widget content;
 
   const IntroScreen(
       {Key key,
       this.showTitle = true,
       this.simpleLogo = false,
+      this.loading = false,
       this.footer,
       this.footerPadding = true,
+      this.scaffoldKey,
       @required this.content})
       : super(key: key);
 
@@ -34,14 +38,18 @@ class IntroScreen extends StatelessWidget {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
-        // resizeToAvoidBottomPadding: false,
+        key: scaffoldKey ?? null,
+        bottomSheet: loading ? LinearProgressIndicator() : null,
         body: Container(
           padding: EdgeInsets.only(top: 20),
           decoration: BoxDecoration(
               gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: [theme.colorScheme.primary, theme.colorScheme.primaryVariant],
+            colors: [
+              theme.colorScheme.primary,
+              theme.colorScheme.primaryVariant
+            ],
           )),
           child: Stack(
             alignment: Alignment.topCenter,

@@ -40,7 +40,7 @@ class _ActivityWrapperState extends State<ActivityWrapper>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.addObserver(this);
+    WidgetsBinding.instance.removeObserver(this);
     super.dispose();
   }
 
@@ -53,12 +53,14 @@ class _ActivityWrapperState extends State<ActivityWrapper>
     if (state != _currentState) {
       _currentState = state;
       appData.session.getSelf().then((self) {
-        if (state == AppLifecycleState.paused) {
+        if (state == AppLifecycleState.paused ||
+            state == AppLifecycleState.inactive) {
           self.distracted = true;
           if (selfStream == null) {
             selfStream = self.docRef.snapshots().listen((doc) {
               log('Background participant update received');
-              final Participant participant = Participant.fromSnapshot(doc, appData.session.docRef);
+              final Participant participant =
+              Participant.fromSnapshot(doc, appData.session.docRef);
               if (participant.distracted && participant.recallMsg != null) {
                 log('Sending push notification');
                 PlacemapUtils.showNotification(
@@ -71,7 +73,6 @@ class _ActivityWrapperState extends State<ActivityWrapper>
           self.camera = false;
           selfStream?.cancel();
           selfStream = null;
-          PlacemapUtils.cancelNotification();
         }
         self.update();
       });
@@ -115,33 +116,40 @@ class ParticipantBubble extends StatelessWidget {
     final CollectionReference participants =
         appData.session.docRef.collection('participants');
 
+    int participantCount = 0;
+    List<Participant> distracted = [];
+
     return StreamBuilder<QuerySnapshot>(
         stream: participants.snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (!snapshot.hasData) return SizedBox.shrink();
           log('Updated participant data received from the remote');
 
-          final data = snapshot.data;
-          final int participantCount = data.size;
-          final List<Participant> distracted = [];
           Participant self;
+          if (snapshot.hasData) {
+            final data = snapshot.data;
+            participantCount = data.size;
+            distracted = [];
 
-          data.docs.forEach((doc) {
-            final Participant participant =
-                Participant.fromSnapshot(doc, appData.session.docRef);
-            if (participant.deviceId == PlacemapUtils.cachedDeviceId)
-              self = participant;
+            data.docs.forEach((doc) {
+              final Participant participant =
+                  Participant.fromSnapshot(doc, appData.session.docRef);
+              if (participant.deviceId == PlacemapUtils.cachedDeviceId)
+                self = participant;
 
-            if (participant.distracted && !participant.camera ||
-                participant.recallMsg != null) distracted.add(participant);
-          });
+              if (participant.distracted && !participant.camera ||
+                  participant.recallMsg != null) distracted.add(participant);
+            });
 
-          if (distracted.length == 0 && appData.recallAck) Future.microtask(() => appData.recallAck = false);
+            if (distracted.length == 0 && appData.recallAck)
+              Future.microtask(() => appData.recallAck = false);
+          }
 
           return Stack(
             alignment: Alignment.topCenter,
             children: [
-              (distracted.length > 0 && !appData.recallAck) ||
+              (distracted.length > 0 &&
+                          !appData.recallAck &&
+                          !self.distracted) ||
                       appData.demoRecallMenu
                   ? RecallMenu(participantCount, distracted)
                   : Positioned(
@@ -157,10 +165,12 @@ class ParticipantBubble extends StatelessWidget {
                           width: 50,
                           child: Center(
                             child: Text(
-                              (participantCount -
-                                      distracted.length -
-                                      (appData.demoDecrease ? 1 : 0))
-                                  .toString(),
+                              participantCount == 0
+                                  ? ''
+                                  : (participantCount -
+                                          distracted.length -
+                                          (appData.demoDecrease ? 1 : 0))
+                                      .toString(),
                               style: theme.textTheme.headline4
                                   .copyWith(color: Colors.white, height: 1.5),
                               textAlign: TextAlign.center,
@@ -169,9 +179,9 @@ class ParticipantBubble extends StatelessWidget {
                         ),
                       ),
                     ),
-              if ((self.recallImg != null && self.recallMsg != null) ||
+              if ((self?.recallImg != null && self?.recallMsg != null) ||
                   appData.demoRecallPopup)
-                RecallPopup(self),
+                if (self != null) RecallPopup(self),
               if (Platform.isAndroid)
                 Positioned(
                     bottom: 60,
@@ -215,11 +225,14 @@ class RecallMenu extends StatelessWidget {
 
   void sendMessage(AppData appData) {
     final Random rng = Random();
-    distracted.forEach((participant) {
+    for (final participant in distracted) {
+      if (participant.recallMsg != null || participant.recallImg != null)
+        continue;
+
       participant.recallImg = 'graphics/recall/meme${rng.nextInt(12) + 1}.jpeg';
       participant.recallMsg = messages[rng.nextInt(messages.length)];
       participant.update();
-    });
+    }
   }
 
   @override
@@ -244,12 +257,17 @@ class RecallMenu extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                (participantCount - distracted.length).toString(),
-                style: theme.textTheme.headline4
-                    .copyWith(color: Colors.white, height: 1.5),
-                textAlign: TextAlign.center,
-              ),
+              participantCount == 0
+                  ? SizedBox(width: 15, height: 20)
+                  : Text(
+                      (participantCount -
+                              distracted.length -
+                              (appData.demoDecrease ? 1 : 0))
+                          .toString(),
+                      style: theme.textTheme.headline4
+                          .copyWith(color: Colors.white, height: 1.5),
+                      textAlign: TextAlign.center,
+                    ),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(horizontal: 10),
@@ -310,6 +328,7 @@ class RecallPopup extends StatelessWidget {
     self.recallImg = null;
     self.recallMsg = null;
     self.update();
+    PlacemapUtils.cancelNotification();
   }
 
   @override

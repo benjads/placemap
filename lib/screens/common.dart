@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:placemap/models/app_data.dart';
 import 'package:provider/provider.dart';
+import 'package:video_player/video_player.dart';
 
 class PlacemapButton extends StatelessWidget {
   final VoidCallback onPressed;
@@ -48,7 +49,7 @@ class DividerText extends StatelessWidget {
     final theme = Theme.of(context);
 
     return Padding(
-      padding: EdgeInsets.symmetric(vertical: 40, horizontal: 10),
+      padding: EdgeInsets.symmetric(vertical: 35, horizontal: 10),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -90,7 +91,11 @@ class ParticipantBubbles extends StatelessWidget {
     return StreamBuilder<QuerySnapshot>(
         stream: participants.snapshots(),
         builder: (BuildContext context, AsyncSnapshot<QuerySnapshot> snapshot) {
-          if (!snapshot.hasData) return SizedBox.shrink();
+          if (!snapshot.hasData)
+            return SizedBox(
+              height: 50,
+              width: 0,
+            );
 
           final int participantCount = snapshot.data.size;
 
@@ -171,6 +176,81 @@ class StrokeText extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class VideoControlsOverlay extends StatefulWidget {
+  const VideoControlsOverlay({Key key, this.controller}) : super(key: key);
+
+  final VideoPlayerController controller;
+
+  @override
+  _VideoControlsOverlayState createState() => _VideoControlsOverlayState();
+}
+
+class _VideoControlsOverlayState extends State<VideoControlsOverlay> {
+  bool _started = false;
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: <Widget>[
+        if (!_started)
+          Container(
+            color: Colors.black26,
+            child: Center(
+              child: Icon(
+                Icons.play_arrow,
+                color: Colors.white,
+                size: 100.0,
+              ),
+            ),
+          ),
+        GestureDetector(
+          onTap: () {
+            if (!_started)
+              setState(() {
+                _started = true;
+              });
+
+            widget.controller.value.isPlaying
+                ? widget.controller.pause()
+                : widget.controller.play();
+          },
+        ),
+      ],
+    );
+  }
+}
+
+class RestartWidget extends StatefulWidget {
+  RestartWidget({this.child});
+
+  final Widget child;
+
+  static void restartApp(BuildContext context) {
+    context.findAncestorStateOfType<_RestartWidgetState>().restartApp();
+  }
+
+  @override
+  _RestartWidgetState createState() => _RestartWidgetState();
+}
+
+class _RestartWidgetState extends State<RestartWidget> {
+  Key key = UniqueKey();
+
+  void restartApp() {
+    setState(() {
+      key = UniqueKey();
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return KeyedSubtree(
+      key: key,
+      child: widget.child,
     );
   }
 }

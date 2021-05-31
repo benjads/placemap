@@ -3,13 +3,28 @@ import 'package:placemap/models/app_data.dart';
 import 'package:placemap/models/session.dart';
 import 'package:placemap/screens/common.dart';
 import 'package:placemap/screens/intro.dart';
+import 'package:placemap/utils.dart';
 import 'package:provider/provider.dart';
 
-class JoinScreen extends StatelessWidget {
+class JoinScreen extends StatefulWidget {
+  @override
+  _JoinScreenState createState() => _JoinScreenState();
+}
+
+class _JoinScreenState extends State<JoinScreen> {
+  bool _loading = false;
+
+  void setLoading(bool loading) {
+    setState(() {
+      _loading = loading;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return IntroScreen(
       showTitle: false,
+      loading: _loading,
       footer: null,
       footerPadding: false,
       content: Padding(
@@ -19,9 +34,9 @@ class JoinScreen extends StatelessWidget {
           children: [
             Visibility(
                 visible: MediaQuery.of(context).viewInsets.bottom == 0,
-                child: CreateSection()),
+                child: CreateSection(setLoading)),
             DividerText(text: 'or'),
-            ExistingSection(),
+            ExistingSection(setLoading),
           ],
         ),
       ),
@@ -30,6 +45,11 @@ class JoinScreen extends StatelessWidget {
 }
 
 class CreateSection extends StatelessWidget {
+
+  final Function setLoading;
+
+  CreateSection(this.setLoading);
+
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
@@ -60,8 +80,11 @@ class CreateSection extends StatelessWidget {
         SizedBox(height: 10),
         PlacemapButton(
             onPressed: () {
-              appData.session.setState(SessionState.tutorial, true);
-              Navigator.popAndPushNamed(context, '/tutorial/1');
+              setLoading(true);
+              PlacemapUtils.firestoreOp(Scaffold.of(context).widget.key, () {
+                appData.session.setState(SessionState.tutorial);
+                return appData.session.update();
+              }, () => Navigator.popAndPushNamed(context, '/tutorial/1'));
             },
             text: "WE'RE READY"),
       ],
@@ -70,6 +93,11 @@ class CreateSection extends StatelessWidget {
 }
 
 class ExistingSection extends StatefulWidget {
+
+  final Function setLoading;
+
+  ExistingSection(this.setLoading);
+
   @override
   _ExistingSectionState createState() => _ExistingSectionState();
 }
@@ -84,27 +112,29 @@ class _ExistingSectionState extends State<ExistingSection> {
       return;
 
     final id = _idController.value.text.toUpperCase();
-    final Session session = await Session.load(id);
 
-    if (session == null) {
-      Scaffold.of(context)
-          .showSnackBar(SnackBar(content: Text('Cannot find room for $id')));
-      return;
-    }
+    widget.setLoading(true);
+    PlacemapUtils.firestoreOp(Scaffold.of(context).widget.key, () async {
+      final Session session = await Session.load(id);
 
-    final appData = context.read<AppData>();
-    if (session.id == appData?.session?.id) {
-      Scaffold.of(context)
-          .showSnackBar(SnackBar(content: Text('You cannot join your own room!')));
-      return;
-    }
+      if (session == null) {
+        Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text('Cannot find room for $id')));
+        return;
+      }
 
-    submitted = true;
-    await session.addSelf();
-    await appData.destroySession();
-    await appData.setSessionId(id);
+      final appData = context.read<AppData>();
+      if (session.id == appData?.session?.id) {
+        Scaffold.of(context)
+            .showSnackBar(SnackBar(content: Text('You cannot join your own room!')));
+        return;
+      }
 
-    Navigator.popAndPushNamed(context, '/join/wait');
+      submitted = true;
+      await session.addSelf();
+      await appData.destroySession();
+      await appData.setSessionId(id);
+    }, () => Navigator.popAndPushNamed(context, '/join/wait'));
   }
 
   @override

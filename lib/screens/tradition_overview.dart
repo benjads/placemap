@@ -7,8 +7,10 @@ import 'package:placemap/models/tradition.dart';
 import 'package:placemap/screens/activity_wrapper.dart';
 import 'package:placemap/screens/common.dart';
 import 'package:placemap/speech_service.dart';
+import 'package:placemap/utils.dart';
 import 'package:provider/provider.dart';
-import 'package:youtube_player_flutter/youtube_player_flutter.dart';
+import 'package:video_player/video_player.dart';
+// import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class TraditionView extends StatefulWidget {
   @override
@@ -17,6 +19,13 @@ class TraditionView extends StatefulWidget {
 
 class _TraditionViewState extends State<TraditionView> {
   bool _cached = false;
+  bool _loading = false;
+
+  void setLoading(bool loading) {
+    setState(() {
+      _loading = loading;
+    });
+  }
 
   @override
   void initState() {
@@ -50,10 +59,11 @@ class _TraditionViewState extends State<TraditionView> {
     return WillPopScope(
       onWillPop: () async => false,
       child: Scaffold(
+        bottomSheet: _loading ? LinearProgressIndicator() : null,
         body: ActivityWrapper(
           child: Stack(
             children: [
-              Positioned.fill(child: TraditionContent()),
+              Positioned.fill(child: TraditionContent(setLoading)),
               Positioned(top: 50, right: 30, child: TtsButton()),
             ],
           ),
@@ -105,6 +115,10 @@ class _TtsButtonState extends State<TtsButton> {
 }
 
 class TraditionContent extends StatefulWidget {
+  final Function setLoading;
+
+  TraditionContent(this.setLoading);
+
   @override
   _TraditionContentState createState() => _TraditionContentState();
 }
@@ -136,9 +150,14 @@ class _TraditionContentState extends State<TraditionContent> {
 
   void _navigate(SessionState newState) async {
     final AppData appData = context.read<AppData>();
-    await appData.createReview();
-    appData.routeChange = true;
-    appData.session.setState(newState, true);
+
+    widget.setLoading(true);
+    PlacemapUtils.firestoreOp(Scaffold.of(context).widget.key, () async {
+      await appData.createReview();
+      appData.routeChange = true;
+      appData.session.setState(newState);
+      await appData.session.update();
+    }, null);
   }
 
   void _review() {
@@ -276,8 +295,8 @@ class TraditionExtended extends StatelessWidget {
                     Padding(
                       padding: const EdgeInsets.fromLTRB(20, 20, 20, 80),
                       child: Text(appData.tradition.fullDesc,
-                          style: theme.textTheme.bodyText1.copyWith(fontSize: 20, height: 1.5)
-                      ),
+                          style: theme.textTheme.bodyText1
+                              .copyWith(fontSize: 20, height: 1.5)),
                     ),
                   ],
                 ),
@@ -300,36 +319,69 @@ class TraditionMedia extends StatefulWidget {
   _TraditionMediaState createState() => _TraditionMediaState();
 }
 
-class _TraditionMediaState extends State<TraditionMedia> {
-  YoutubePlayerController _ytController;
+class _TraditionMediaState extends State<TraditionMedia>
+    with SingleTickerProviderStateMixin {
+  VideoPlayerController _videoController;
+  AnimationController _animController;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final AppData appData = context.read<AppData>();
+
+    _animController =
+        AnimationController(vsync: this, duration: Duration(seconds: 1));
+    _animController.repeat(reverse: true);
+
+    appData.tradition.cacheImages(context, true).whenComplete(() {
+      if (!this.mounted) return;
+
+      if (appData.tradition.videoUri != null) {
+        _videoController =
+            VideoPlayerController.network(appData.tradition.cachedVideoUrl)
+              ..initialize().then((_) => setState(() {}));
+      }
+    });
+  }
+
+  @override
+  void dispose() {
+    _videoController.dispose();
+    _animController.dispose();
+    super.dispose();
+  }
 
   List<Widget> _generateMedia(Tradition tradition) {
     final media = List<Widget>();
 
     if (tradition.videoUri != null) {
-      _ytController = YoutubePlayerController(
-        initialVideoId: YoutubePlayer.convertUrlToId(tradition.videoUri),
-        flags: YoutubePlayerFlags(
-          autoPlay: false,
-          disableDragSeek: true,
-          mute: false,
-          enableCaption: false,
-        ),
+      media.add(
+        _videoController != null && _videoController.value.initialized
+            ? AspectRatio(
+                aspectRatio: _videoController.value.aspectRatio,
+                child: Stack(
+                  alignment: Alignment.bottomCenter,
+                  children: <Widget>[
+                    VideoPlayer(_videoController),
+                    VideoControlsOverlay(controller: _videoController),
+                    VideoProgressIndicator(_videoController,
+                        allowScrubbing: true),
+                  ],
+                ),
+              )
+            : FadeTransition(
+                opacity: _animController,
+                child: Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      fit: BoxFit.contain,
+                      image: AssetImage('graphics/globe_simple.png'),
+                    ),
+                  ),
+                ),
+              ),
       );
-
-      media.add(YoutubePlayer(
-        controller: _ytController,
-        showVideoProgressIndicator: true,
-        bottomActions: [
-          const SizedBox(width: 14),
-          CurrentPosition(),
-          const SizedBox(width: 8),
-          ProgressBar(
-            isExpanded: true,
-          ),
-          RemainingDuration(),
-        ],
-      ));
     }
 
     if (tradition.photos != null) {
@@ -356,8 +408,8 @@ class _TraditionMediaState extends State<TraditionMedia> {
           enableInfiniteScroll: items.length != 1,
           height: 200,
           onPageChanged: (idx, _) {
-            if (_ytController != null && _ytController.value.isPlaying)
-              _ytController.pause();
+            if (_videoController != null && _videoController.value.isPlaying)
+              _videoController.pause();
           }),
       items: _generateMedia(appData.tradition),
     );
