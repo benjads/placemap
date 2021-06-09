@@ -42,3 +42,4 @@ app.*.map.json
 
 ### Firebase / Google Cloud
 google-services.json
+GoogleService-Info.plist
