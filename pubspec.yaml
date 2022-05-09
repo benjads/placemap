@@ -23,22 +23,22 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  firebase_core: ^0.7.0
-  cloud_firestore: ^0.16.0
-  firebase_storage: ^7.0.0
-  provider: ^4.3.3
-  device_info: ^1.0.0
-  flutter_tts: ^2.1.0
-  video_player: ^1.0.1
-  google_fonts: ^1.1.2
-  carousel_slider: ^3.0.0
-  flutter_local_notifications: ^4.0.1+2
+  firebase_core: 0.7.0
+  cloud_firestore: 0.16.0
+  firebase_storage: 7.0.0
+  provider: 4.3.3
+  device_info: 1.0.0
+  flutter_tts: 2.1.0
+  video_player: 1.0.1
+  google_fonts: 1.1.2
+  carousel_slider: 3.0.0
+  flutter_local_notifications: 4.0.1+2
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  pedantic: ^1.9.0
-  flutter_launcher_icons: ^0.8.1
+  pedantic: 1.9.0
+  flutter_launcher_icons: 0.8.1
 
 flutter_icons:
   ios: false

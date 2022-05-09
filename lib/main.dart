@@ -20,6 +20,9 @@ import 'package:provider/provider.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
+  SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(
+    statusBarColor: Colors.transparent,
+  ));
   runApp(PlacemapApp());
 }
 
@@ -54,6 +57,7 @@ class PlacemapApp extends StatelessWidget {
                 title: 'Placemap',
                 theme: appTheme,
                 initialRoute: '/',
+                debugShowCheckedModeBanner: false,
                 onGenerateRoute: (RouteSettings settings) {
                   return PageRouteBuilder(
                     pageBuilder: (_, __, ___) {
